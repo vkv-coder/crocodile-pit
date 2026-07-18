@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1a12">
+<title>Crocodile Pit · Host</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Condensed:wght@500;600;700&display=swap');
+  :root{
+    --pit:#08120c; --pit-2:#0f2117; --bone:#f3ead9; --amber:#ffb020;
+    --danger:#e0472c; --green:#3fa46a; --line:rgba(255,255,255,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;min-height:100vh;
+    background:radial-gradient(120% 70% at 50% -10%,#16341f 0%,var(--pit-2) 45%,var(--pit) 100%);
+    color:var(--bone);font-family:'Barlow Condensed',system-ui,sans-serif;
+    padding:18px 14px calc(28px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  .hidden{display:none !important;}
+  h1{font-family:'Bungee',cursive;font-size:24px;margin:0;}
+  .eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#6f9c7d;font-weight:700;margin-bottom:4px;}
+  h3{font-family:'Bungee',cursive;font-size:15px;margin:26px 0 10px;color:#9fd0b2;letter-spacing:.04em;}
+  .card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;}
+  label{display:block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#6f9c7d;font-weight:700;margin-bottom:5px;}
+  input{width:100%;padding:12px 14px;border-radius:10px;border:0;background:rgba(255,255,255,.08);color:var(--bone);font-family:'Barlow Condensed';font-size:18px;font-weight:600;}
+  input:focus{outline:2px solid var(--amber);}
+  .row{display:flex;gap:10px;} .row>div{flex:1;}
+  .btn{font-family:'Bungee',cursive;font-size:15px;padding:13px 26px;border:0;border-radius:99px;cursor:pointer;background:linear-gradient(#ffc24d,#f59300);color:#2a1a00;box-shadow:0 4px 0 #a86400;}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a86400;}
+  .btn:disabled{opacity:.35;box-shadow:none;cursor:not-allowed;}
+  .btn.full{width:100%;}
+  .btn.ghost{background:transparent;color:#8fb79c;box-shadow:inset 0 0 0 2px rgba(143,183,156,.35);font-size:13px;padding:10px 20px;}
+  .btn.green{background:linear-gradient(#5fce8f,#2f8b57);color:#04240f;box-shadow:0 4px 0 #1c5c38;}
+  .btn.red{background:linear-gradient(#f0634a,#c02f16);color:#fff;box-shadow:0 4px 0 #7d1c08;}
+  .code{font-family:'Bungee',cursive;font-size:44px;color:var(--amber);letter-spacing:.12em;text-align:center;}
+  .muted{color:#8fb79c;font-size:14px;}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);padding:7px 13px;border-radius:99px;font-size:14px;font-weight:600;margin:0 6px 6px 0;cursor:pointer;border:1px solid transparent;}
+  .chip:hover{border-color:var(--amber);}
+  .chip.sel{background:var(--amber);color:#2a1a00;}
+  .chip .x{opacity:.6;font-weight:700;}
+  .teamblock{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;}
+  .teamblock .th{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;}
+  .teamblock .tname{font-family:'Bungee',cursive;font-size:16px;color:var(--amber);}
+  .prog{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:8px 0;}
+  .prog i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--amber));transition:width .2s;}
+  table{width:100%;border-collapse:collapse;font-size:15px;}
+  th,td{padding:9px 6px;text-align:left;border-bottom:1px solid var(--line);}
+  th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6f9c7d;}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .score{font-family:'Bungee',cursive;color:var(--amber);}
+  .neg{color:var(--danger);}
+  .err{color:var(--danger);font-weight:700;min-height:20px;}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ====== PIN ====== -->
+<section id="gate">
+  <div class="eyebrow">Crocodile Pit</div>
+  <h1>Host console</h1>
+  <div class="card" style="margin-top:18px">
+    <label>Host PIN</label>
+    <input id="pin" type="password" placeholder="PIN">
+    <div style="height:12px"></div>
+    <button class="btn full" id="pinBtn">Unlock</button>
+    <p class="err" id="pinErr"></p>
+  </div>
+</section>
+
+<!-- ====== SETUP ====== -->
+<section id="setup" class="hidden">
+  <div class="eyebrow">Crocodile Pit</div>
+  <h1>New game</h1>
+
+  <div class="card" style="margin-top:16px">
+    <div class="row">
+      <div><label>Teams</label><input id="nTeams" type="number" min="2" max="12" value="4"></div>
+      <div><label>Rounds</label><input id="nRounds" type="number" min="1" max="12" value="4"></div>
+    </div>
+    <h3 style="margin-top:20px">Scoring — change anything you want</h3>
+    <div class="row">
+      <div><label>1st place</label><input id="topPts" type="number" value="1000"></div>
+      <div><label>Last place</label><input id="lastPts" type="number" value="250"></div>
+    </div>
+    <div style="height:10px"></div>
+    <label>Points lost per foul</label>
+    <input id="foulMult" type="number" value="100">
+    <p class="muted" id="ladderPreview" style="margin:12px 0 0"></p>
+    <div style="height:14px"></div>
+    <button class="btn full" id="createBtn">Create room</button>
+  </div>
+
+  <div class="card">
+    <label>Or reopen a room</label>
+    <div class="row">
+      <div><input id="reCode" placeholder="ROOM CODE"></div>
+      <div style="flex:0 0 auto"><button class="btn ghost" id="reBtn" style="padding:13px 20px">Open</button></div>
+    </div>
+    <p class="err" id="setupErr"></p>
+  </div>
+</section>
+
+<!-- ====== CONSOLE ====== -->
+<section id="console" class="hidden">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Room code</div>
+      <div class="code" id="roomCode" style="text-align:left">----</div>
+      <div class="muted" id="roomMeta"></div>
+    </div>
+    <button class="btn ghost" id="exitBtn">Close</button>
+  </div>
+
+  <!-- teams builder -->
+  <div id="builder">
+    <h3>Unassigned players <span class="muted" id="unCount"></span></h3>
+    <div class="card"><div id="unassigned"><span class="muted">Nobody has joined yet.</span></div></div>
+
+    <h3>Teams</h3>
+    <div id="teamList"></div>
+    <button class="btn ghost" id="addTeamBtn">Add a team</button>
+    <p class="muted" style="margin-top:10px">Tap a player, then tap the team you want them in.</p>
+  </div>
+
+  <!-- round control -->
+  <h3>Round control</h3>
+  <div class="card">
+    <div class="muted" id="roundState">Round 0 — not started</div>
+    <div style="height:12px"></div>
+    <button class="btn green full" id="openBtn">Declare open — start round 1</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost full hidden" id="closeBtn">Close round early</button>
+    <div style="height:10px"></div>
+    <button class="btn red full hidden" id="finishBtn">Finish game and show scores</button>
+  </div>
+
+  <!-- live monitor -->
+  <div id="monitor" class="hidden">
+    <h3>Live</h3>
+    <div id="liveList"></div>
+  </div>
+
+  <!-- results -->
+  <div id="results" class="hidden">
+    <h3>Final standings</h3>
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <thead><tr><th>#</th><th>Team</th><th class="num">Best</th><th class="num">Rd</th><th class="num">Fouls</th><th class="num">Score</th></tr></thead>
+        <tbody id="resBody"></tbody>
+      </table>
+      <p class="muted" id="resNote" style="margin-top:12px"></p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+
+let room=null, teams=[], players=[], rounds=[], taps=[], results=[], ch=null, selPlayer=null, poll=null;
+
+/* ============ PIN ============ */
+$('pinBtn').addEventListener('click', ()=>{
+  if($('pin').value === ADMIN_PIN){
+    $('gate').classList.add('hidden');
+    $('setup').classList.remove('hidden');
+    sessionStorage.setItem('cp_admin','1');
+    refreshSuggestion();
+  }else $('pinErr').textContent='Wrong PIN.';
+});
+$('pin').addEventListener('keydown',e=>{ if(e.key==='Enter') $('pinBtn').click(); });
+if(sessionStorage.getItem('cp_admin')==='1'){
+  $('gate').classList.add('hidden'); $('setup').classList.remove('hidden');
+}
+
+/* ============ SETUP ============ */
+function refreshSuggestion(){
+  const n = +$('nTeams').value || 4;
+  const s = suggestScoring(n);
+  $('topPts').value = s.top;
+  $('lastPts').value = s.last;
+  $('foulMult').value = s.mult;
+  previewLadder();
+}
+function previewLadder(){
+  const n=+$('nTeams').value||4, top=+$('topPts').value||0, last=+$('lastPts').value||0;
+  $('ladderPreview').textContent = 'Points by rank: ' + pointsLadder(n, top, last).join(' · ')
+    + ' — each foul in the counted round costs ' + (+$('foulMult').value||0) + '.';
+}
+$('nTeams').addEventListener('input', refreshSuggestion);
+['topPts','lastPts','foulMult'].forEach(id=>$(id).addEventListener('input', previewLadder));
+refreshSuggestion();
+
+$('createBtn').addEventListener('click', async ()=>{
+  const code = String(Math.floor(1000+Math.random()*9000));
+  const {data,error} = await sb.from('cp_rooms').insert({
+    code,
+    teams_planned:+$('nTeams').value,
+    rounds_total:+$('nRounds').value,
+    top_points:+$('topPts').value,
+    last_points:+$('lastPts').value,
+    foul_multiplier:+$('foulMult').value
+  }).select().single();
+  if(error){ $('setupErr').textContent='Could not create the room.'; return; }
+  room=data;
+  // pre-create the teams
+  const names = ['Team A','Team B','Team C','Team D','Team E','Team F','Team G','Team H','Team I','Team J','Team K','Team L'];
+  const rows = Array.from({length:room.teams_planned},(_,i)=>({room_id:room.id, name:names[i]||('Team '+(i+1))}));
+  await sb.from('cp_teams').insert(rows);
+  localStorage.setItem('cp_host_room', code);
+  openConsole();
+});
+
+$('reBtn').addEventListener('click', async ()=>{
+  const code=$('reCode').value.trim();
+  const {data} = await sb.from('cp_rooms').select('*').eq('code',code).maybeSingle();
+  if(!data){ $('setupErr').textContent='No room with that code.'; return; }
+  room=data; localStorage.setItem('cp_host_room', code); openConsole();
+});
+
+const savedRoom = localStorage.getItem('cp_host_room');
+if(savedRoom && sessionStorage.getItem('cp_admin')==='1'){
+  sb.from('cp_rooms').select('*').eq('code',savedRoom).maybeSingle().then(({data})=>{
+    if(data && data.status!=='finished'){ room=data; openConsole(); }
+  });
+}
+
+$('exitBtn').addEventListener('click', ()=>{
+  localStorage.removeItem('cp_host_room');
+  if(ch) sb.removeChannel(ch);
+  clearInterval(poll);
+  location.reload();
+});
+
+/* ============ CONSOLE ============ */
+async function openConsole(){
+  $('setup').classList.add('hidden');
+  $('console').classList.remove('hidden');
+  $('roomCode').textContent = room.code;
+  await loadAll();
+  subscribe();
+  clearInterval(poll);
+  poll = setInterval(async ()=>{ if(room.status==='running'){ await loadAll(); draw(); } }, 1000);
+  draw();
+}
+
+async function loadAll(){
+  const [rm,t,p,rd] = await Promise.all([
+    sb.from('cp_rooms').select('*').eq('id',room.id).maybeSingle(),
+    sb.from('cp_teams').select('*').eq('room_id',room.id).order('created_at'),
+    sb.from('cp_players').select('*').eq('room_id',room.id).order('joined_at'),
+    sb.from('cp_rounds').select('*').eq('room_id',room.id).order('round_no')
+  ]);
+  if(rm.data) room=rm.data;
+  teams=t.data||[]; players=p.data||[]; rounds=rd.data||[];
+  const [tp,rt] = await Promise.all([
+    sb.from('cp_taps').select('round_no,team_id,number,is_foul').eq('room_id',room.id),
+    sb.from('cp_round_teams').select('*').eq('room_id',room.id)
+  ]);
+  taps=tp.data||[]; results=rt.data||[];
+}
+
+function subscribe(){
+  if(ch) sb.removeChannel(ch);
+  const f='room_id=eq.'+room.id;
+  const bump = async ()=>{ await loadAll(); draw(); };
+  ch = sb.channel('cp_host_'+room.code)
+    .on('postgres_changes',{event:'*',schema:'public',table:'cp_players',filter:f}, bump)
+    .on('postgres_changes',{event:'*',schema:'public',table:'cp_teams',filter:f}, bump)
+    .on('postgres_changes',{event:'*',schema:'public',table:'cp_round_teams',filter:f}, bump)
+    .subscribe();
+}
+
+/* ---------- draw ---------- */
+function draw(){
+  $('roomMeta').textContent = `${room.rounds_total} rounds · ${teams.length} teams · ${players.length} players · 1st ${room.top_points}, last ${room.last_points}, foul −${room.foul_multiplier}`;
+
+  const cur = rounds.length ? rounds[rounds.length-1] : null;
+  const live = room.status==='running' && cur;
+
+  // unassigned
+  const un = players.filter(p=>!p.team_id);
+  $('unCount').textContent = un.length ? '('+un.length+')' : '';
+  $('unassigned').innerHTML = un.length
+    ? un.map(p=>chip(p)).join('')
+    : '<span class="muted">Everyone is in a team.</span>';
+
+  // teams
+  $('teamList').innerHTML = teams.map(t=>{
+    const mem = players.filter(p=>p.team_id===t.id);
+    return `<div class="teamblock" data-team="${t.id}">
+      <div class="th">
+        <span class="tname">${esc(t.name)}</span>
+        <span>
+          <button class="btn ghost" data-act="rename" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Rename</button>
+          <button class="btn ghost" data-act="assign" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Put here</button>
+          <button class="btn ghost" data-act="delteam" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Remove</button>
+        </span>
+      </div>
+      <div>${mem.length ? mem.map(p=>chip(p)).join('') : '<span class="muted">No players yet.</span>'}</div>
+    </div>`;
+  }).join('');
+
+  // round control
+  const done = cur ? teams.filter(t=>results.some(r=>r.round_no===cur.round_no && r.team_id===t.id && r.duration_ms!=null)).length : 0;
+  if(room.status==='finished'){
+    $('roundState').textContent = 'Game over.';
+    $('openBtn').classList.add('hidden'); $('closeBtn').classList.add('hidden'); $('finishBtn').classList.add('hidden');
+    $('builder').classList.add('hidden');
+    showResults();
+  }else if(live){
+    $('roundState').textContent = `Round ${cur.round_no} of ${room.rounds_total} running — ${done} of ${teams.length} teams finished.`;
+    $('openBtn').classList.add('hidden');
+    $('closeBtn').classList.remove('hidden');
+    $('finishBtn').classList.add('hidden');
+    $('builder').classList.add('hidden');
+    $('monitor').classList.remove('hidden');
+    drawLive(cur);
+    if(done === teams.length && teams.length) closeRound();
+  }else{
+    const next = room.current_round + 1;
+    $('builder').classList.remove('hidden');
+    $('monitor').classList.toggle('hidden', room.current_round===0);
+    if(cur) drawLive(cur);
+    $('closeBtn').classList.add('hidden');
+    if(next > room.rounds_total){
+      $('roundState').textContent = 'All rounds played.';
+      $('openBtn').classList.add('hidden');
+      $('finishBtn').classList.remove('hidden');
+    }else{
+      $('roundState').textContent = room.current_round===0
+        ? 'Nothing started yet.'
+        : `Round ${room.current_round} finished.`;
+      $('openBtn').textContent = 'Declare open — start round '+next;
+      $('openBtn').classList.remove('hidden');
+      $('openBtn').disabled = players.filter(p=>p.team_id).length < 2;
+      $('finishBtn').classList.toggle('hidden', room.current_round===0);
+    }
+  }
+}
+
+function chip(p){
+  return `<span class="chip ${selPlayer===p.id?'sel':''}" data-act="pick" data-id="${p.id}">${esc(p.name)} <span class="x" data-act="kick" data-id="${p.id}">×</span></span>`;
+}
+
+function drawLive(cur){
+  $('liveList').innerHTML = teams.map(t=>{
+    const mine = taps.filter(x=>x.round_no===cur.round_no && x.team_id===t.id);
+    const hits = new Set(mine.filter(x=>!x.is_foul).map(x=>x.number)).size;
+    const fouls = mine.filter(x=>x.is_foul).length;
+    const res = results.find(r=>r.round_no===cur.round_no && r.team_id===t.id);
+    return `<div class="teamblock">
+      <div class="th"><span class="tname">${esc(t.name)}</span>
+        <span class="muted">${res && res.duration_ms!=null ? fmtMs(res.duration_ms) : hits+'/20'} · ${fouls} foul${fouls===1?'':'s'}</span></div>
+      <div class="prog"><i style="width:${hits/20*100}%"></i></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- clicks ---------- */
+document.addEventListener('click', async e=>{
+  const el = e.target.closest('[data-act]');
+  if(!el) return;
+  const act = el.dataset.act, id = el.dataset.id;
+
+  if(act==='kick'){
+    e.stopPropagation();
+    await sb.from('cp_players').delete().eq('id',id);
+    await loadAll(); draw(); return;
+  }
+  if(act==='pick'){ selPlayer = (selPlayer===id ? null : id); draw(); return; }
+  if(act==='assign'){
+    if(!selPlayer){ alert('Tap a player first.'); return; }
+    await sb.from('cp_players').update({team_id:id}).eq('id',selPlayer);
+    selPlayer=null; await loadAll(); draw(); return;
+  }
+  if(act==='rename'){
+    const t = teams.find(x=>x.id===id);
+    const n = prompt('Team name', t ? t.name : '');
+    if(n && n.trim()){ await sb.from('cp_teams').update({name:n.trim()}).eq('id',id); await loadAll(); draw(); }
+    return;
+  }
+  if(act==='delteam'){
+    if(!confirm('Remove this team? Its players go back to unassigned.')) return;
+    await sb.from('cp_players').update({team_id:null}).eq('team_id',id);
+    await sb.from('cp_teams').delete().eq('id',id);
+    await loadAll(); draw(); return;
+  }
+});
+
+$('addTeamBtn').addEventListener('click', async ()=>{
+  const n = prompt('Team name', 'Team '+String.fromCharCode(65+teams.length));
+  if(!n || !n.trim()) return;
+  await sb.from('cp_teams').insert({room_id:room.id, name:n.trim()});
+  await loadAll(); draw();
+});
+
+/* ---------- open a round ---------- */
+$('openBtn').addEventListener('click', async ()=>{
+  const next = room.current_round + 1;
+  const goAt = new Date(Date.now() + 6000).toISOString();
+  await sb.from('cp_rounds').upsert({
+    room_id:room.id, round_no:next, layout:makeLayout(), go_at:goAt, status:'running'
+  },{onConflict:'room_id,round_no'});
+  await sb.from('cp_rooms').update({status:'running', current_round:next}).eq('id',room.id);
+  await loadAll(); draw();
+});
+
+async function closeRound(){
+  const cur = rounds[rounds.length-1];
+  if(!cur) return;
+  await sb.from('cp_rounds').update({status:'closed'}).eq('id',cur.id);
+  await sb.from('cp_rooms').update({status:'round_end'}).eq('id',room.id);
+  await loadAll(); draw();
+}
+$('closeBtn').addEventListener('click', async ()=>{
+  if(confirm('Close this round now? Teams still tapping will have no time recorded.')) closeRound();
+});
+
+$('finishBtn').addEventListener('click', async ()=>{
+  if(!confirm('Finish the game and publish the scores?')) return;
+  await sb.from('cp_rooms').update({status:'finished'}).eq('id',room.id);
+  await loadAll(); draw();
+});
+
+/* ---------- scoring ---------- */
+function showResults(){
+  $('results').classList.remove('hidden');
+  $('monitor').classList.add('hidden');
+
+  // best round per team = lowest duration
+  const rows = teams.map(t=>{
+    const mine = results.filter(r=>r.team_id===t.id && r.duration_ms!=null);
+    if(!mine.length) return {team:t, best:null, round:null, fouls:0};
+    const best = mine.reduce((a,b)=> b.duration_ms < a.duration_ms ? b : a);
+    const fouls = taps.filter(x=>x.team_id===t.id && x.round_no===best.round_no && x.is_foul).length;
+    return {team:t, best:best.duration_ms, round:best.round_no, fouls};
+  });
+
+  const played = rows.filter(r=>r.best!=null).sort((a,b)=>a.best-b.best);
+  const dnf    = rows.filter(r=>r.best==null);
+  const ladder = pointsLadder(teams.length, room.top_points, room.last_points);
+
+  // ties share the rank and the points; the next rank is skipped
+  let rank = 0;
+  played.forEach((r,i)=>{
+    if(i===0 || r.best !== played[i-1].best) rank = i;
+    r.rank = rank + 1;
+    r.pts  = ladder[Math.min(rank, ladder.length-1)];
+    r.score = r.pts - r.fouls * room.foul_multiplier;
+  });
+  dnf.forEach(r=>{ r.rank='—'; r.pts=0; r.score=0; });
+
+  $('resBody').innerHTML = played.concat(dnf).map(r=>`
+    <tr>
+      <td>${r.rank}</td>
+      <td>${esc(r.team.name)}</td>
+      <td class="num">${r.best==null?'—':fmtMs(r.best)}</td>
+      <td class="num">${r.round??'—'}</td>
+      <td class="num">${r.fouls}</td>
+      <td class="num score ${r.score<0?'neg':''}">${r.score}</td>
+    </tr>`).join('');
+
+  $('resNote').textContent = `Each team is scored on its fastest round only. Rank points ${ladder.join(' · ')}, minus ${room.foul_multiplier} for every foul made in that same round. Equal times share the rank and the points.`;
+}
+</script>
+</body>
+</html>
