@@ -16,7 +16,7 @@
     margin:0;min-height:100vh;
     background:radial-gradient(120% 70% at 50% -10%,#16341f 0%,var(--pit-2) 45%,var(--pit) 100%);
     color:var(--bone);font-family:'Barlow Condensed',system-ui,sans-serif;
-    padding:18px 14px calc(28px + env(safe-area-inset-bottom));
+    padding:18px 14px calc(30px + env(safe-area-inset-bottom));
   }
   .wrap{max-width:640px;margin:0 auto;}
   .hidden{display:none !important;}
@@ -27,6 +27,7 @@
   label{display:block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#6f9c7d;font-weight:700;margin-bottom:5px;}
   input{width:100%;padding:12px 14px;border-radius:10px;border:0;background:rgba(255,255,255,.08);color:var(--bone);font-family:'Barlow Condensed';font-size:18px;font-weight:600;}
   input:focus{outline:2px solid var(--amber);}
+  input:disabled{opacity:.5;}
   .row{display:flex;gap:10px;} .row>div{flex:1;}
   .btn{font-family:'Bungee',cursive;font-size:15px;padding:13px 26px;border:0;border-radius:99px;cursor:pointer;background:linear-gradient(#ffc24d,#f59300);color:#2a1a00;box-shadow:0 4px 0 #a86400;}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a86400;}
@@ -35,16 +36,17 @@
   .btn.ghost{background:transparent;color:#8fb79c;box-shadow:inset 0 0 0 2px rgba(143,183,156,.35);font-size:13px;padding:10px 20px;}
   .btn.green{background:linear-gradient(#5fce8f,#2f8b57);color:#04240f;box-shadow:0 4px 0 #1c5c38;}
   .btn.red{background:linear-gradient(#f0634a,#c02f16);color:#fff;box-shadow:0 4px 0 #7d1c08;}
-  .code{font-family:'Bungee',cursive;font-size:44px;color:var(--amber);letter-spacing:.12em;text-align:center;}
+  .code{font-family:'Bungee',cursive;font-size:40px;color:var(--amber);letter-spacing:.12em;}
   .muted{color:#8fb79c;font-size:14px;}
+  .big{font-family:'Bungee',cursive;font-size:26px;color:var(--bone);}
   .chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);padding:7px 13px;border-radius:99px;font-size:14px;font-weight:600;margin:0 6px 6px 0;cursor:pointer;border:1px solid transparent;}
   .chip:hover{border-color:var(--amber);}
   .chip.sel{background:var(--amber);color:#2a1a00;}
   .chip .x{opacity:.6;font-weight:700;}
   .teamblock{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;}
-  .teamblock .th{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;}
+  .teamblock .th{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap;}
   .teamblock .tname{font-family:'Bungee',cursive;font-size:16px;color:var(--amber);}
-  .prog{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:8px 0;}
+  .prog{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:8px 0 0;}
   .prog i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--amber));transition:width .2s;}
   table{width:100%;border-collapse:collapse;font-size:15px;}
   th,td{padding:9px 6px;text-align:left;border-bottom:1px solid var(--line);}
@@ -53,7 +55,8 @@
   .score{font-family:'Bungee',cursive;color:var(--amber);}
   .neg{color:var(--danger);}
   .err{color:var(--danger);font-weight:700;min-height:20px;}
-  .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+  .ok{color:var(--green);font-weight:700;min-height:20px;}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;}
 </style>
 </head>
 <body>
@@ -72,36 +75,27 @@
   </div>
 </section>
 
-<!-- ====== SETUP ====== -->
+<!-- ====== OPEN A ROOM ====== -->
 <section id="setup" class="hidden">
   <div class="eyebrow">Crocodile Pit</div>
-  <h1>New game</h1>
+  <h1>Open a room</h1>
+  <p class="muted" style="margin:8px 0 0">Pick any code you like and tell it to the players. Teams, rounds and points come later, once you can see who has joined.</p>
 
   <div class="card" style="margin-top:16px">
-    <div class="row">
-      <div><label>Teams</label><input id="nTeams" type="number" min="2" max="12" value="4"></div>
-      <div><label>Rounds</label><input id="nRounds" type="number" min="1" max="12" value="4"></div>
-    </div>
-    <h3 style="margin-top:20px">Scoring — change anything you want</h3>
-    <div class="row">
-      <div><label>1st place</label><input id="topPts" type="number" value="1000"></div>
-      <div><label>Last place</label><input id="lastPts" type="number" value="250"></div>
-    </div>
-    <div style="height:10px"></div>
-    <label>Points lost per foul</label>
-    <input id="foulMult" type="number" value="100">
-    <p class="muted" id="ladderPreview" style="margin:12px 0 0"></p>
-    <div style="height:14px"></div>
+    <label>Room code</label>
+    <input id="newCode" placeholder="e.g. 1111" maxlength="6" autocomplete="off">
+    <div style="height:12px"></div>
     <button class="btn full" id="createBtn">Create room</button>
+    <p class="err" id="createErr"></p>
   </div>
 
   <div class="card">
-    <label>Or reopen a room</label>
+    <label>Or go back into a room you already opened</label>
     <div class="row">
-      <div><input id="reCode" placeholder="ROOM CODE"></div>
+      <div><input id="reCode" placeholder="ROOM CODE" maxlength="6"></div>
       <div style="flex:0 0 auto"><button class="btn ghost" id="reBtn" style="padding:13px 20px">Open</button></div>
     </div>
-    <p class="err" id="setupErr"></p>
+    <p class="err" id="reErr"></p>
   </div>
 </section>
 
@@ -110,42 +104,73 @@
   <div class="top">
     <div>
       <div class="eyebrow">Room code</div>
-      <div class="code" id="roomCode" style="text-align:left">----</div>
-      <div class="muted" id="roomMeta"></div>
+      <div class="code" id="roomCode">----</div>
     </div>
     <button class="btn ghost" id="exitBtn">Close</button>
   </div>
+  <p class="muted" id="roomMeta"></p>
 
-  <!-- teams builder -->
-  <div id="builder">
-    <h3>Unassigned players <span class="muted" id="unCount"></span></h3>
-    <div class="card"><div id="unassigned"><span class="muted">Nobody has joined yet.</span></div></div>
+  <!-- 1. who has joined -->
+  <h3>Who has joined</h3>
+  <div class="card">
+    <div class="big" id="joinCount">0 players</div>
+    <p class="muted" id="joinHint" style="margin:4px 0 12px">Share the room code. Names appear here as they join.</p>
+    <div id="allPlayers"><span class="muted">Nobody yet.</span></div>
+  </div>
 
+  <!-- 2. game setup -->
+  <h3>Game setup</h3>
+  <div class="card" id="setupCard">
+    <div class="row">
+      <div><label>Teams</label><input id="nTeams" type="number" min="2" max="12" value="4"></div>
+      <div><label>Rounds</label><input id="nRounds" type="number" min="1" max="12" value="4"></div>
+    </div>
+    <p class="muted" id="splitHint" style="margin:10px 0 0"></p>
+    <div class="row" style="margin-top:16px">
+      <div><label>1st place</label><input id="topPts" type="number"></div>
+      <div><label>Last place</label><input id="lastPts" type="number"></div>
+    </div>
+    <div style="height:10px"></div>
+    <label>Points lost per foul</label>
+    <input id="foulMult" type="number">
+    <p class="muted" id="ladderPreview" style="margin:12px 0 0"></p>
+    <div style="height:14px"></div>
+    <button class="btn full" id="saveSetupBtn">Save setup and build the teams</button>
+    <p class="ok" id="setupMsg"></p>
+  </div>
+  <div class="card hidden" id="lockedCard">
+    <p class="muted" id="lockedText"></p>
+  </div>
+
+  <!-- 3. teams -->
+  <div id="builder" class="hidden">
+    <h3>Unassigned <span class="muted" id="unCount"></span></h3>
+    <div class="card"><div id="unassigned"><span class="muted">Everyone is in a team.</span></div></div>
     <h3>Teams</h3>
     <div id="teamList"></div>
     <button class="btn ghost" id="addTeamBtn">Add a team</button>
-    <p class="muted" style="margin-top:10px">Tap a player, then tap the team you want them in.</p>
+    <p class="muted" style="margin-top:10px">Tap a player, then tap <strong>Put here</strong> on the team you want them in.</p>
   </div>
 
-  <!-- round control -->
+  <!-- 4. round control -->
   <h3>Round control</h3>
   <div class="card">
-    <div class="muted" id="roundState">Round 0 — not started</div>
+    <div class="muted" id="roundState">Set up the game first.</div>
     <div style="height:12px"></div>
-    <button class="btn green full" id="openBtn">Declare open — start round 1</button>
+    <button class="btn green full hidden" id="openBtn">Declare open</button>
     <div style="height:10px"></div>
     <button class="btn ghost full hidden" id="closeBtn">Close round early</button>
     <div style="height:10px"></div>
     <button class="btn red full hidden" id="finishBtn">Finish game and show scores</button>
   </div>
 
-  <!-- live monitor -->
+  <!-- 5. live -->
   <div id="monitor" class="hidden">
     <h3>Live</h3>
     <div id="liveList"></div>
   </div>
 
-  <!-- results -->
+  <!-- 6. results -->
   <div id="results" class="hidden">
     <h3>Final standings</h3>
     <div class="card" style="overflow-x:auto">
@@ -165,16 +190,16 @@
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const TEAM_NAMES = ['Team A','Team B','Team C','Team D','Team E','Team F','Team G','Team H','Team I','Team J','Team K','Team L'];
 
-let room=null, teams=[], players=[], rounds=[], taps=[], results=[], ch=null, selPlayer=null, poll=null;
+let room=null, teams=[], players=[], rounds=[], taps=[], results=[], ch=null, selPlayer=null, poll=null, touchedPts=false;
 
 /* ============ PIN ============ */
 $('pinBtn').addEventListener('click', ()=>{
   if($('pin').value === ADMIN_PIN){
+    sessionStorage.setItem('cp_admin','1');
     $('gate').classList.add('hidden');
     $('setup').classList.remove('hidden');
-    sessionStorage.setItem('cp_admin','1');
-    refreshSuggestion();
   }else $('pinErr').textContent='Wrong PIN.';
 });
 $('pin').addEventListener('keydown',e=>{ if(e.key==='Enter') $('pinBtn').click(); });
@@ -182,55 +207,35 @@ if(sessionStorage.getItem('cp_admin')==='1'){
   $('gate').classList.add('hidden'); $('setup').classList.remove('hidden');
 }
 
-/* ============ SETUP ============ */
-function refreshSuggestion(){
-  const n = +$('nTeams').value || 4;
-  const s = suggestScoring(n);
-  $('topPts').value = s.top;
-  $('lastPts').value = s.last;
-  $('foulMult').value = s.mult;
-  previewLadder();
-}
-function previewLadder(){
-  const n=+$('nTeams').value||4, top=+$('topPts').value||0, last=+$('lastPts').value||0;
-  $('ladderPreview').textContent = 'Points by rank: ' + pointsLadder(n, top, last).join(' · ')
-    + ' — each foul in the counted round costs ' + (+$('foulMult').value||0) + '.';
-}
-$('nTeams').addEventListener('input', refreshSuggestion);
-['topPts','lastPts','foulMult'].forEach(id=>$(id).addEventListener('input', previewLadder));
-refreshSuggestion();
-
+/* ============ OPEN A ROOM ============ */
 $('createBtn').addEventListener('click', async ()=>{
-  const code = String(Math.floor(1000+Math.random()*9000));
+  const code = $('newCode').value.trim().toUpperCase();
+  $('createErr').textContent='';
+  if(code.length<3){ $('createErr').textContent='Give the room a code of at least 3 characters.'; return; }
+  const {data:exists} = await sb.from('cp_rooms').select('id,status').eq('code',code).maybeSingle();
+  if(exists){ $('createErr').textContent='That code is already in use. Pick another, or reopen it below.'; return; }
   const {data,error} = await sb.from('cp_rooms').insert({
-    code,
-    teams_planned:+$('nTeams').value,
-    rounds_total:+$('nRounds').value,
-    top_points:+$('topPts').value,
-    last_points:+$('lastPts').value,
-    foul_multiplier:+$('foulMult').value
+    code, teams_planned:0, rounds_total:4, top_points:1000, last_points:250, foul_multiplier:100
   }).select().single();
-  if(error){ $('setupErr').textContent='Could not create the room.'; return; }
+  if(error){ $('createErr').textContent='Could not create the room.'; return; }
   room=data;
-  // pre-create the teams
-  const names = ['Team A','Team B','Team C','Team D','Team E','Team F','Team G','Team H','Team I','Team J','Team K','Team L'];
-  const rows = Array.from({length:room.teams_planned},(_,i)=>({room_id:room.id, name:names[i]||('Team '+(i+1))}));
-  await sb.from('cp_teams').insert(rows);
   localStorage.setItem('cp_host_room', code);
   openConsole();
 });
+$('newCode').addEventListener('keydown',e=>{ if(e.key==='Enter') $('createBtn').click(); });
 
 $('reBtn').addEventListener('click', async ()=>{
-  const code=$('reCode').value.trim();
+  const code=$('reCode').value.trim().toUpperCase();
+  $('reErr').textContent='';
   const {data} = await sb.from('cp_rooms').select('*').eq('code',code).maybeSingle();
-  if(!data){ $('setupErr').textContent='No room with that code.'; return; }
+  if(!data){ $('reErr').textContent='No room with that code.'; return; }
   room=data; localStorage.setItem('cp_host_room', code); openConsole();
 });
 
-const savedRoom = localStorage.getItem('cp_host_room');
-if(savedRoom && sessionStorage.getItem('cp_admin')==='1'){
-  sb.from('cp_rooms').select('*').eq('code',savedRoom).maybeSingle().then(({data})=>{
-    if(data && data.status!=='finished'){ room=data; openConsole(); }
+const saved = localStorage.getItem('cp_host_room');
+if(saved && sessionStorage.getItem('cp_admin')==='1'){
+  sb.from('cp_rooms').select('*').eq('code',saved).maybeSingle().then(({data})=>{
+    if(data){ room=data; openConsole(); }
   });
 }
 
@@ -247,6 +252,7 @@ async function openConsole(){
   $('console').classList.remove('hidden');
   $('roomCode').textContent = room.code;
   await loadAll();
+  fillSetupInputs();
   subscribe();
   clearInterval(poll);
   poll = setInterval(async ()=>{ if(room.status==='running'){ await loadAll(); draw(); } }, 1000);
@@ -280,71 +286,163 @@ function subscribe(){
     .subscribe();
 }
 
+/* ---------- setup inputs ---------- */
+function fillSetupInputs(){
+  $('nRounds').value = room.rounds_total || 4;
+  if(room.teams_planned) $('nTeams').value = room.teams_planned;
+  if(room.teams_planned){
+    $('topPts').value=room.top_points; $('lastPts').value=room.last_points; $('foulMult').value=room.foul_multiplier;
+    touchedPts = true;
+  }else suggest();
+  previewLadder();
+}
+function suggest(){
+  const s = suggestScoring(+$('nTeams').value||4);
+  $('topPts').value=s.top; $('lastPts').value=s.last; $('foulMult').value=s.mult;
+}
+function previewLadder(){
+  const n=+$('nTeams').value||4, top=+$('topPts').value||0, last=+$('lastPts').value||0;
+  $('ladderPreview').textContent = 'Points by rank: ' + pointsLadder(n,top,last).join(' · ')
+    + ' — each foul in the counted round costs ' + (+$('foulMult').value||0) + '.';
+  const P=players.length;
+  if(P && n){
+    const lo=Math.floor(P/n), hi=Math.ceil(P/n);
+    $('splitHint').textContent = `${P} players across ${n} teams — about ${lo===hi?lo:lo+' to '+hi} per team.`;
+  }else{
+    $('splitHint').textContent = 'Wait until the players have joined, then choose how many teams.';
+  }
+}
+$('nTeams').addEventListener('input', ()=>{ if(!touchedPts) suggest(); previewLadder(); });
+['topPts','lastPts','foulMult'].forEach(id=>$(id).addEventListener('input', ()=>{ touchedPts=true; previewLadder(); }));
+$('nRounds').addEventListener('input', previewLadder);
+
+$('saveSetupBtn').addEventListener('click', async ()=>{
+  const n = +$('nTeams').value||0;
+  if(n<2){ $('setupMsg').textContent='Need at least 2 teams.'; return; }
+  await sb.from('cp_rooms').update({
+    teams_planned:n, rounds_total:+$('nRounds').value||4,
+    top_points:+$('topPts').value||0, last_points:+$('lastPts').value||0,
+    foul_multiplier:+$('foulMult').value||0
+  }).eq('id',room.id);
+
+  await loadAll();
+  // build or trim the team list to match
+  if(teams.length < n){
+    const rows = [];
+    for(let i=teams.length;i<n;i++) rows.push({room_id:room.id, name:TEAM_NAMES[i]||('Team '+(i+1))});
+    await sb.from('cp_teams').insert(rows);
+  }else if(teams.length > n){
+    const extra = teams.slice(n);
+    for(const t of extra){
+      await sb.from('cp_players').update({team_id:null}).eq('team_id',t.id);
+      await sb.from('cp_teams').delete().eq('id',t.id);
+    }
+  }
+  await loadAll();
+  $('setupMsg').textContent='Saved. Now put the players into teams below.';
+  setTimeout(()=>{ $('setupMsg').textContent=''; }, 3000);
+  draw();
+});
+
 /* ---------- draw ---------- */
 function draw(){
-  $('roomMeta').textContent = `${room.rounds_total} rounds · ${teams.length} teams · ${players.length} players · 1st ${room.top_points}, last ${room.last_points}, foul −${room.foul_multiplier}`;
+  const started = room.current_round > 0;
+  $('roomMeta').textContent = room.teams_planned
+    ? `${room.rounds_total} rounds · ${teams.length} teams · 1st ${room.top_points}, last ${room.last_points}, foul −${room.foul_multiplier}`
+    : 'Not set up yet.';
+
+  // joined
+  $('joinCount').textContent = players.length + (players.length===1?' player':' players');
+  $('joinHint').textContent = players.length
+    ? 'Tap the × on a name to remove someone.'
+    : 'Share the room code. Names appear here as they join.';
+  $('allPlayers').innerHTML = players.length
+    ? players.map(p=>`<span class="chip"><span>${esc(p.name)}</span><span class="x" data-act="kick" data-id="${p.id}">×</span></span>`).join('')
+    : '<span class="muted">Nobody yet.</span>';
+
+  // setup card locks once round 1 starts
+  ['nTeams','nRounds','topPts','lastPts','foulMult'].forEach(id=>$(id).disabled = started);
+  $('saveSetupBtn').classList.toggle('hidden', started);
+  $('setupCard').classList.toggle('hidden', started);
+  $('lockedCard').classList.toggle('hidden', !started);
+  if(started){
+    $('lockedText').textContent = `${teams.length} teams · ${room.rounds_total} rounds · points ${pointsLadder(teams.length,room.top_points,room.last_points).join(' · ')} · foul −${room.foul_multiplier}. Locked now the game has begun.`;
+  }else{
+    previewLadder();
+  }
 
   const cur = rounds.length ? rounds[rounds.length-1] : null;
   const live = room.status==='running' && cur;
 
-  // unassigned
-  const un = players.filter(p=>!p.team_id);
-  $('unCount').textContent = un.length ? '('+un.length+')' : '';
-  $('unassigned').innerHTML = un.length
-    ? un.map(p=>chip(p)).join('')
-    : '<span class="muted">Everyone is in a team.</span>';
-
-  // teams
-  $('teamList').innerHTML = teams.map(t=>{
-    const mem = players.filter(p=>p.team_id===t.id);
-    return `<div class="teamblock" data-team="${t.id}">
-      <div class="th">
-        <span class="tname">${esc(t.name)}</span>
-        <span>
-          <button class="btn ghost" data-act="rename" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Rename</button>
-          <button class="btn ghost" data-act="assign" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Put here</button>
-          <button class="btn ghost" data-act="delteam" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Remove</button>
-        </span>
-      </div>
-      <div>${mem.length ? mem.map(p=>chip(p)).join('') : '<span class="muted">No players yet.</span>'}</div>
-    </div>`;
-  }).join('');
+  // team builder
+  $('builder').classList.toggle('hidden', !teams.length || live || room.status==='finished');
+  if(teams.length){
+    const un = players.filter(p=>!p.team_id);
+    $('unCount').textContent = un.length ? '('+un.length+')' : '';
+    $('unassigned').innerHTML = un.length
+      ? un.map(p=>chip(p)).join('')
+      : '<span class="muted">Everyone is in a team.</span>';
+    $('teamList').innerHTML = teams.map(t=>{
+      const mem = players.filter(p=>p.team_id===t.id);
+      return `<div class="teamblock">
+        <div class="th">
+          <span class="tname">${esc(t.name)} <span class="muted">· ${mem.length}</span></span>
+          <span>
+            <button class="btn ghost" data-act="assign" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Put here</button>
+            <button class="btn ghost" data-act="rename" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Rename</button>
+            <button class="btn ghost" data-act="delteam" data-id="${t.id}" style="padding:6px 12px;font-size:11px">Remove</button>
+          </span>
+        </div>
+        <div>${mem.length ? mem.map(p=>chip(p)).join('') : '<span class="muted">No players yet.</span>'}</div>
+      </div>`;
+    }).join('');
+  }
 
   // round control
   const done = cur ? teams.filter(t=>results.some(r=>r.round_no===cur.round_no && r.team_id===t.id && r.duration_ms!=null)).length : 0;
+
   if(room.status==='finished'){
-    $('roundState').textContent = 'Game over.';
-    $('openBtn').classList.add('hidden'); $('closeBtn').classList.add('hidden'); $('finishBtn').classList.add('hidden');
-    $('builder').classList.add('hidden');
+    $('roundState').textContent='Game over.';
+    ['openBtn','closeBtn','finishBtn'].forEach(id=>$(id).classList.add('hidden'));
+    $('monitor').classList.add('hidden');
     showResults();
-  }else if(live){
+    return;
+  }
+
+  if(live){
     $('roundState').textContent = `Round ${cur.round_no} of ${room.rounds_total} running — ${done} of ${teams.length} teams finished.`;
     $('openBtn').classList.add('hidden');
     $('closeBtn').classList.remove('hidden');
     $('finishBtn').classList.add('hidden');
-    $('builder').classList.add('hidden');
     $('monitor').classList.remove('hidden');
     drawLive(cur);
-    if(done === teams.length && teams.length) closeRound();
+    if(teams.length && done===teams.length) closeRound();
+    return;
+  }
+
+  $('closeBtn').classList.add('hidden');
+  $('monitor').classList.toggle('hidden', !cur);
+  if(cur) drawLive(cur);
+
+  const next = room.current_round + 1;
+  const assigned = players.filter(p=>p.team_id).length;
+  const teamsWithPlayers = teams.filter(t=>players.some(p=>p.team_id===t.id)).length;
+
+  if(!teams.length){
+    $('roundState').textContent='Set the number of teams above first.';
+    $('openBtn').classList.add('hidden'); $('finishBtn').classList.add('hidden');
+  }else if(next > room.rounds_total){
+    $('roundState').textContent='All rounds played.';
+    $('openBtn').classList.add('hidden');
+    $('finishBtn').classList.remove('hidden');
   }else{
-    const next = room.current_round + 1;
-    $('builder').classList.remove('hidden');
-    $('monitor').classList.toggle('hidden', room.current_round===0);
-    if(cur) drawLive(cur);
-    $('closeBtn').classList.add('hidden');
-    if(next > room.rounds_total){
-      $('roundState').textContent = 'All rounds played.';
-      $('openBtn').classList.add('hidden');
-      $('finishBtn').classList.remove('hidden');
-    }else{
-      $('roundState').textContent = room.current_round===0
-        ? 'Nothing started yet.'
-        : `Round ${room.current_round} finished.`;
-      $('openBtn').textContent = 'Declare open — start round '+next;
-      $('openBtn').classList.remove('hidden');
-      $('openBtn').disabled = players.filter(p=>p.team_id).length < 2;
-      $('finishBtn').classList.toggle('hidden', room.current_round===0);
-    }
+    $('roundState').textContent = room.current_round===0
+      ? (teamsWithPlayers<2 ? 'Put players into at least 2 teams, then declare open.' : 'Ready. Everyone is waiting.')
+      : `Round ${room.current_round} finished.`;
+    $('openBtn').textContent = 'Declare open — start round '+next;
+    $('openBtn').classList.remove('hidden');
+    $('openBtn').disabled = teamsWithPlayers < 2 || assigned < 2;
+    $('finishBtn').classList.toggle('hidden', room.current_round===0);
   }
 }
 
@@ -375,17 +473,18 @@ document.addEventListener('click', async e=>{
   if(act==='kick'){
     e.stopPropagation();
     await sb.from('cp_players').delete().eq('id',id);
+    if(selPlayer===id) selPlayer=null;
     await loadAll(); draw(); return;
   }
   if(act==='pick'){ selPlayer = (selPlayer===id ? null : id); draw(); return; }
   if(act==='assign'){
-    if(!selPlayer){ alert('Tap a player first.'); return; }
+    if(!selPlayer){ alert('Tap a player first, then tap Put here.'); return; }
     await sb.from('cp_players').update({team_id:id}).eq('id',selPlayer);
     selPlayer=null; await loadAll(); draw(); return;
   }
   if(act==='rename'){
-    const t = teams.find(x=>x.id===id);
-    const n = prompt('Team name', t ? t.name : '');
+    const t=teams.find(x=>x.id===id);
+    const n=prompt('Team name', t?t.name:'');
     if(n && n.trim()){ await sb.from('cp_teams').update({name:n.trim()}).eq('id',id); await loadAll(); draw(); }
     return;
   }
@@ -398,18 +497,19 @@ document.addEventListener('click', async e=>{
 });
 
 $('addTeamBtn').addEventListener('click', async ()=>{
-  const n = prompt('Team name', 'Team '+String.fromCharCode(65+teams.length));
+  const n=prompt('Team name','Team '+String.fromCharCode(65+teams.length));
   if(!n || !n.trim()) return;
   await sb.from('cp_teams').insert({room_id:room.id, name:n.trim()});
+  await sb.from('cp_rooms').update({teams_planned:teams.length+1}).eq('id',room.id);
   await loadAll(); draw();
 });
 
-/* ---------- open a round ---------- */
+/* ---------- rounds ---------- */
 $('openBtn').addEventListener('click', async ()=>{
   const next = room.current_round + 1;
-  const goAt = new Date(Date.now() + 6000).toISOString();
   await sb.from('cp_rounds').upsert({
-    room_id:room.id, round_no:next, layout:makeLayout(), go_at:goAt, status:'running'
+    room_id:room.id, round_no:next, layout:makeLayout(),
+    go_at:new Date(Date.now()+6000).toISOString(), status:'running'
   },{onConflict:'room_id,round_no'});
   await sb.from('cp_rooms').update({status:'running', current_round:next}).eq('id',room.id);
   await loadAll(); draw();
@@ -417,12 +517,12 @@ $('openBtn').addEventListener('click', async ()=>{
 
 async function closeRound(){
   const cur = rounds[rounds.length-1];
-  if(!cur) return;
+  if(!cur || cur.status==='closed') return;
   await sb.from('cp_rounds').update({status:'closed'}).eq('id',cur.id);
   await sb.from('cp_rooms').update({status:'round_end'}).eq('id',room.id);
   await loadAll(); draw();
 }
-$('closeBtn').addEventListener('click', async ()=>{
+$('closeBtn').addEventListener('click', ()=>{
   if(confirm('Close this round now? Teams still tapping will have no time recorded.')) closeRound();
 });
 
@@ -435,40 +535,32 @@ $('finishBtn').addEventListener('click', async ()=>{
 /* ---------- scoring ---------- */
 function showResults(){
   $('results').classList.remove('hidden');
-  $('monitor').classList.add('hidden');
-
-  // best round per team = lowest duration
   const rows = teams.map(t=>{
     const mine = results.filter(r=>r.team_id===t.id && r.duration_ms!=null);
-    if(!mine.length) return {team:t, best:null, round:null, fouls:0};
-    const best = mine.reduce((a,b)=> b.duration_ms < a.duration_ms ? b : a);
+    if(!mine.length) return {team:t,best:null,round:null,fouls:0};
+    const best = mine.reduce((a,b)=> b.duration_ms<a.duration_ms ? b : a);
     const fouls = taps.filter(x=>x.team_id===t.id && x.round_no===best.round_no && x.is_foul).length;
-    return {team:t, best:best.duration_ms, round:best.round_no, fouls};
+    return {team:t,best:best.duration_ms,round:best.round_no,fouls};
   });
-
   const played = rows.filter(r=>r.best!=null).sort((a,b)=>a.best-b.best);
   const dnf    = rows.filter(r=>r.best==null);
   const ladder = pointsLadder(teams.length, room.top_points, room.last_points);
 
-  // ties share the rank and the points; the next rank is skipped
-  let rank = 0;
+  let rank=0;
   played.forEach((r,i)=>{
-    if(i===0 || r.best !== played[i-1].best) rank = i;
-    r.rank = rank + 1;
-    r.pts  = ladder[Math.min(rank, ladder.length-1)];
-    r.score = r.pts - r.fouls * room.foul_multiplier;
+    if(i===0 || r.best !== played[i-1].best) rank=i;
+    r.rank=rank+1;
+    r.pts=ladder[Math.min(rank,ladder.length-1)];
+    r.score=r.pts - r.fouls*room.foul_multiplier;
   });
   dnf.forEach(r=>{ r.rank='—'; r.pts=0; r.score=0; });
 
   $('resBody').innerHTML = played.concat(dnf).map(r=>`
-    <tr>
-      <td>${r.rank}</td>
-      <td>${esc(r.team.name)}</td>
-      <td class="num">${r.best==null?'—':fmtMs(r.best)}</td>
-      <td class="num">${r.round??'—'}</td>
-      <td class="num">${r.fouls}</td>
-      <td class="num score ${r.score<0?'neg':''}">${r.score}</td>
-    </tr>`).join('');
+    <tr><td>${r.rank}</td><td>${esc(r.team.name)}</td>
+    <td class="num">${r.best==null?'—':fmtMs(r.best)}</td>
+    <td class="num">${r.round??'—'}</td>
+    <td class="num">${r.fouls}</td>
+    <td class="num score ${r.score<0?'neg':''}">${r.score}</td></tr>`).join('');
 
   $('resNote').textContent = `Each team is scored on its fastest round only. Rank points ${ladder.join(' · ')}, minus ${room.foul_multiplier} for every foul made in that same round. Equal times share the rank and the points.`;
 }
