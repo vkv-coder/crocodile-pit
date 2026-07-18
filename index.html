@@ -11,6 +11,7 @@
   :root{
     --pit:#08120c; --pit-2:#0f2117; --slab:#c9b393; --slab-edge:#8d7659;
     --bone:#f3ead9; --amber:#ffb020; --danger:#e0472c; --water:#123326; --gap:26px;
+    --team:#ffb020;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;margin:0;}
@@ -21,9 +22,9 @@
     padding:14px 12px calc(14px + env(safe-area-inset-bottom));
     overflow:hidden;user-select:none;
   }
+  body.scroll{overflow:auto;}
   .hidden{display:none !important;}
 
-  /* ---------- foul flash ---------- */
   #foulBar{
     position:fixed;top:0;left:0;right:0;height:0;z-index:99;
     background:linear-gradient(var(--danger),#8e1c0c);
@@ -35,24 +36,18 @@
   #foulBar.on{height:64px;animation:foulPulse .45s steps(2,end) 3;}
   @keyframes foulPulse{0%,100%{opacity:1}50%{opacity:.25}}
   body.shake{animation:shake .4s;}
-  @keyframes shake{
-    0%,100%{transform:translateX(0)}
-    20%{transform:translateX(-9px)} 40%{transform:translateX(8px)}
-    60%{transform:translateX(-6px)} 80%{transform:translateX(5px)}
-  }
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(5px)}}
 
-  /* ---------- header ---------- */
   header{width:100%;max-width:520px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}
-  .brand h1{font-family:'Bungee',cursive;font-size:clamp(18px,5.5vw,26px);margin:0;text-shadow:0 2px 0 #04150c;}
+  .brand h1{font-family:'Bungee',cursive;font-size:clamp(18px,5.5vw,26px);margin:0;color:var(--team);text-shadow:0 2px 0 #04150c;}
   .brand span{display:block;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:#6f9c7d;margin-top:5px;font-weight:600;}
   .clock{text-align:right;}
   .clock .t{font-family:'Bungee',cursive;font-size:clamp(24px,8vw,36px);line-height:1;color:var(--amber);font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(255,176,32,.35);}
   .clock .lbl{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#6f9c7d;font-weight:700;}
 
   .progress{width:100%;max-width:520px;height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:12px;}
-  .progress i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#3fa46a,var(--amber));transition:width .18s ease;}
+  .progress i{display:block;height:100%;width:0%;background:var(--team);transition:width .18s ease;}
 
-  /* ---------- board ---------- */
   .board-wrap{position:relative;width:100%;max-width:520px;flex:1;display:flex;align-items:center;}
   .board{position:relative;width:100%;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(4,1fr);gap:var(--gap);aspect-ratio:5/4.6;padding:6px;}
   .lanes{position:absolute;inset:6px;pointer-events:none;z-index:0;overflow:hidden;}
@@ -81,15 +76,10 @@
   .count{font-family:'Bungee',cursive;font-size:clamp(60px,22vw,110px);color:var(--amber);line-height:1;text-shadow:0 0 40px rgba(255,176,32,.4);}
   .final{font-family:'Bungee',cursive;font-size:clamp(30px,11vw,50px);color:var(--amber);margin:2px 0 12px;font-variant-numeric:tabular-nums;}
 
-  /* ---------- join / lobby ---------- */
   .panel{width:100%;max-width:420px;margin:auto;text-align:center;}
   .panel h2{font-family:'Bungee',cursive;font-size:26px;margin:0 0 6px;}
   .panel p.sub{color:#8fb79c;margin:0 0 22px;font-size:15px;}
-  input{
-    width:100%;padding:14px 16px;margin-bottom:12px;border-radius:11px;border:0;
-    background:rgba(255,255,255,.08);color:var(--bone);
-    font-family:'Barlow Condensed';font-size:19px;font-weight:600;letter-spacing:.05em;text-align:center;
-  }
+  input{width:100%;padding:14px 16px;margin-bottom:12px;border-radius:11px;border:0;background:rgba(255,255,255,.08);color:var(--bone);font-family:'Barlow Condensed';font-size:19px;font-weight:600;letter-spacing:.05em;text-align:center;}
   input::placeholder{color:#5f8770;}
   input:focus{outline:2px solid var(--amber);}
   .btn{font-family:'Bungee',cursive;font-size:16px;padding:14px 30px;border:0;border-radius:99px;cursor:pointer;background:linear-gradient(#ffc24d,#f59300);color:#2a1a00;box-shadow:0 5px 0 #a86400,0 10px 20px rgba(0,0,0,.45);}
@@ -98,14 +88,19 @@
   .btn.ghost{background:transparent;color:#8fb79c;box-shadow:inset 0 0 0 2px rgba(143,183,156,.35);font-size:13px;padding:10px 22px;}
   .btn.red{background:linear-gradient(#f0634a,#c02f16);color:#fff;box-shadow:0 5px 0 #7d1c08;}
 
-  .teamcard{background:rgba(255,255,255,.06);border-radius:14px;padding:18px;margin-top:14px;}
-  .teamcard .tn{font-family:'Bungee',cursive;font-size:24px;color:var(--amber);}
+  .teamcard{background:rgba(255,255,255,.06);border-radius:14px;padding:18px;margin-top:14px;border:2px solid var(--team);}
+  .teamcard .tn{font-family:'Bungee',cursive;font-size:24px;color:var(--team);}
   .mates{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px;}
   .mate{background:rgba(255,255,255,.09);padding:6px 13px;border-radius:99px;font-size:14px;font-weight:600;}
-  .mate.me{background:var(--amber);color:#2a1a00;}
+  .mate.me{background:var(--team);color:#101010;}
 
   footer{width:100%;max-width:520px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#48705a;font-weight:700;}
   .err{color:var(--danger);font-weight:700;min-height:20px;font-size:15px;}
+
+  #resultView{width:100%;max-width:700px;margin:0 auto;padding:6px 0 30px;}
+  #resultView h2{font-family:'Bungee',cursive;font-size:26px;margin:0 0 4px;text-align:center;}
+  #resultView .myline{text-align:center;color:var(--team);font-family:'Bungee',cursive;font-size:18px;margin:0 0 18px;}
+  .rcard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:14px;}
   @media (prefers-reduced-motion:reduce){ .croc{display:none;} }
 </style>
 </head>
@@ -113,7 +108,6 @@
 
 <div id="foulBar">FOUL</div>
 
-<!-- ============ JOIN ============ -->
 <section id="joinView" class="panel">
   <h2>Crocodile Pit</h2>
   <p class="sub">Enter the room code your host gave you.</p>
@@ -123,7 +117,6 @@
   <p class="err" id="joinErr"></p>
 </section>
 
-<!-- ============ LOBBY ============ -->
 <section id="lobbyView" class="panel hidden">
   <h2 id="lobbyTitle">You're in</h2>
   <p class="sub" id="lobbySub">Waiting for the host to build the teams.</p>
@@ -135,7 +128,6 @@
   <button class="btn ghost" id="leaveBtn">Leave room</button>
 </section>
 
-<!-- ============ GAME ============ -->
 <section id="gameView" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;flex:1;">
   <header>
     <div class="brand">
@@ -147,9 +139,7 @@
       <div class="lbl">Time</div>
     </div>
   </header>
-
   <div class="progress"><i id="bar"></i></div>
-
   <div class="board-wrap">
     <div class="board" id="board">
       <div class="lanes" id="lanes"></div>
@@ -161,26 +151,34 @@
       </div>
     </div>
   </div>
-
   <footer>
     <span id="hit">0 / 20 stones</span>
     <span><button class="btn red" id="foulTestBtn" style="padding:8px 18px;font-size:12px">Test foul</button></span>
   </footer>
 </section>
 
+<section id="resultView" class="hidden">
+  <h2>Final standings</h2>
+  <p class="myline" id="myResult"></p>
+  <div class="rcard"><div id="sbPlayer"></div></div>
+  <div style="text-align:center;margin-top:18px">
+    <button class="btn ghost" id="leaveBtn2">Leave room</button>
+  </div>
+</section>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
-/* ================= state ================= */
-let room=null, me=null, myTeam=null, teams=[], players=[], round=null;
+let room=null, me=null, myTeam=null, teams=[], players=[], round=null, rounds=[], results=[], taps=[];
 let slabs=[], tappedNums=new Set(), running=false, raf=null, goMs=0, finished=false;
 let ch=null, builtRound=-1, crocsBuilt=false;
 
 const $ = id => document.getElementById(id);
-const joinView=$('joinView'), lobbyView=$('lobbyView'), gameView=$('gameView');
-const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const esc = escHtml;
+const joinView=$('joinView'), lobbyView=$('lobbyView'), gameView=$('gameView'), resultView=$('resultView');
+injectScoreboardCss();
 
-/* ================= crocodiles ================= */
+/* ---------- crocodiles ---------- */
 const CROC_SVG = `
 <svg viewBox="0 0 120 34" xmlns="http://www.w3.org/2000/svg">
   <path d="M6 22 C14 14,30 12,44 13 L74 13 C90 12,104 15,114 20 L114 24 C104 27,88 28,74 27 L44 27 C30 28,16 27,6 24 Z" fill="#2f6b45"/>
@@ -191,17 +189,14 @@ const CROC_SVG = `
   <circle cx="98" cy="17" r="3.4" fill="#f3ead9"/><circle cx="98.8" cy="17" r="1.7" fill="#0d1a12"/>
   <path d="M112 21 L118 22 L112 24 Z" fill="#f3ead9"/>
 </svg>`;
-
-const GAP = 26, CROC_COUNT = 11;
-const LANES = [];
+const GAP=26, CROC_COUNT=11, LANES=[];
 for(let r=1;r<4;r++) LANES.push({type:'h', at:(r/4)*100});
 for(let c=1;c<5;c++) LANES.push({type:'v', at:(c/5)*100});
-const rnd = (a,b) => a + Math.random()*(b-a);
+const rnd=(a,b)=>a+Math.random()*(b-a);
 
 function buildLanes(){
   if(crocsBuilt) return;
-  const host = $('lanes');
-  host.innerHTML='';
+  const host=$('lanes'); host.innerHTML='';
   LANES.forEach(L=>{
     const d=document.createElement('div');
     d.className='lane '+L.type;
@@ -211,129 +206,140 @@ function buildLanes(){
   });
   for(let i=0;i<CROC_COUNT;i++){
     const el=document.createElement('div');
-    el.className='croc';
-    el.innerHTML=CROC_SVG;
-    host.appendChild(el);
-    swim(el, true);
+    el.className='croc'; el.innerHTML=CROC_SVG;
+    host.appendChild(el); swim(el,true);
   }
-  crocsBuilt = true;
+  crocsBuilt=true;
 }
-
-/* each croc picks a random lane, speed and direction, then re-picks every crossing */
 function swim(el, initial){
-  const L = LANES[Math.floor(Math.random()*LANES.length)];
-  const dur = rnd(6000,16000);
-  const fwd = Math.random() < .5;
-  const box = el.parentElement.getBoundingClientRect();
-  const track = (L.type==='h' ? box.width : box.height) + 160;
-  const start = performance.now() - (initial ? Math.random()*dur : 0);
-
-  const step = now => {
-    const e = (now - start) / dur;
-    if(e >= 1){ swim(el,false); return; }
-    const d = fwd ? (-150 + e*track) : (track - 150 - e*track);
-    if(L.type==='h'){
-      el.style.transform =
-        `translate(${d}px, calc(${L.at}% - 8px)) scaleX(${fwd?1:-1})`;
-    }else{
-      el.style.transform =
-        `translate(calc(${L.at}% - ${GAP*0.55}px), ${d}px) rotate(${fwd?90:270}deg)`;
-    }
+  const L=LANES[Math.floor(Math.random()*LANES.length)];
+  const dur=rnd(6000,16000), fwd=Math.random()<.5;
+  const box=el.parentElement.getBoundingClientRect();
+  const track=(L.type==='h'?box.width:box.height)+160;
+  const start=performance.now()-(initial?Math.random()*dur:0);
+  const step=now=>{
+    const e=(now-start)/dur;
+    if(e>=1){ swim(el,false); return; }
+    const d=fwd ? (-150+e*track) : (track-150-e*track);
+    el.style.transform = L.type==='h'
+      ? `translate(${d}px, calc(${L.at}% - 8px)) scaleX(${fwd?1:-1})`
+      : `translate(calc(${L.at}% - ${GAP*0.55}px), ${d}px) rotate(${fwd?90:270}deg)`;
     requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
 }
 
-/* ================= foul flash ================= */
+/* ---------- foul flash ---------- */
 function flashFoul(msg){
   const bar=$('foulBar');
-  bar.textContent = msg || 'FOUL';
+  bar.textContent=msg||'FOUL';
   bar.classList.add('on');
   document.body.classList.add('shake');
   if(navigator.vibrate) navigator.vibrate([90,60,90,60,140]);
-  setTimeout(()=>{ bar.classList.remove('on'); document.body.classList.remove('shake'); }, 1400);
+  setTimeout(()=>{ bar.classList.remove('on'); document.body.classList.remove('shake'); },1400);
 }
 
-/* ================= join ================= */
+/* ---------- join ---------- */
 $('joinBtn').addEventListener('click', join);
 $('inName').addEventListener('keydown', e=>{ if(e.key==='Enter') join(); });
 
 async function join(){
-  const code = $('inCode').value.trim().toUpperCase();
-  const name = $('inName').value.trim();
+  const code=$('inCode').value.trim().toUpperCase();
+  const name=$('inName').value.trim();
   $('joinErr').textContent='';
-  if(code.length<4 || !name){ $('joinErr').textContent='Enter the room code and your name.'; return; }
-
-  const {data:r} = await sb.from('cp_rooms').select('*').eq('code',code).maybeSingle();
+  if(code.length<3 || !name){ $('joinErr').textContent='Enter the room code and your name.'; return; }
+  const {data:r}=await sb.from('cp_rooms').select('*').eq('code',code).maybeSingle();
   if(!r){ $('joinErr').textContent='No room with that code.'; return; }
   if(r.status==='finished'){ $('joinErr').textContent='That game is already over.'; return; }
-
-  room = r;
-  const {data:p, error} = await sb.from('cp_players').insert({room_id:r.id, name}).select().single();
+  room=r;
+  const {data:p,error}=await sb.from('cp_players').insert({room_id:r.id, name}).select().single();
   if(error){ $('joinErr').textContent='Could not join. Try again.'; return; }
-  me = p;
+  me=p;
   localStorage.setItem('cp_me', JSON.stringify({room_code:code, player_id:p.id}));
   await enterRoom();
 }
 
 async function resume(){
-  const raw = localStorage.getItem('cp_me');
-  if(!raw) return false;
+  const raw=localStorage.getItem('cp_me');
+  if(!raw) return;
   try{
-    const {room_code, player_id} = JSON.parse(raw);
-    const {data:r} = await sb.from('cp_rooms').select('*').eq('code',room_code).maybeSingle();
-    if(!r || r.status==='finished') return false;
-    const {data:p} = await sb.from('cp_players').select('*').eq('id',player_id).maybeSingle();
-    if(!p) return false;
+    const {room_code, player_id}=JSON.parse(raw);
+    const {data:r}=await sb.from('cp_rooms').select('*').eq('code',room_code).maybeSingle();
+    if(!r) return;
+    const {data:p}=await sb.from('cp_players').select('*').eq('id',player_id).maybeSingle();
+    if(!p) return;
     room=r; me=p;
     await enterRoom();
-    return true;
-  }catch(e){ return false; }
+  }catch(e){}
 }
 
-$('leaveBtn').addEventListener('click', async ()=>{
-  if(me) await sb.from('cp_players').delete().eq('id', me.id);
+async function leave(){
+  if(me) await sb.from('cp_players').delete().eq('id',me.id);
   localStorage.removeItem('cp_me');
   location.reload();
-});
+}
+$('leaveBtn').addEventListener('click', leave);
+$('leaveBtn2').addEventListener('click', leave);
 
-/* ================= room ================= */
+/* ---------- room ---------- */
 async function enterRoom(){
   joinView.classList.add('hidden');
-  lobbyView.classList.remove('hidden');
   await refreshAll();
-  $('roomInfo').textContent = `Room ${room.code} · ${room.rounds_total} rounds`;
+  $('roomInfo').textContent=`Room ${room.code} · ${room.rounds_total} rounds`;
   subscribe();
   render();
 }
 
 async function refreshAll(){
-  const [t,p,rd,rm] = await Promise.all([
+  const [t,p,rd,rm]=await Promise.all([
     sb.from('cp_teams').select('*').eq('room_id',room.id).order('created_at'),
-    sb.from('cp_players').select('*').eq('room_id',room.id).order('joined_at'),
-    sb.from('cp_rounds').select('*').eq('room_id',room.id).order('round_no',{ascending:false}).limit(1),
+    sb.from('cp_players').select('*').eq('room_id',room.id).order('name'),
+    sb.from('cp_rounds').select('*').eq('room_id',room.id).order('round_no'),
     sb.from('cp_rooms').select('*').eq('id',room.id).maybeSingle()
   ]);
-  teams=t.data||[]; players=p.data||[]; round=(rd.data&&rd.data[0])||null;
+  teams=t.data||[]; players=p.data||[]; rounds=rd.data||[];
+  round = rounds.length ? rounds[rounds.length-1] : null;
   if(rm.data) room=rm.data;
   me = players.find(x=>x.id===me.id) || me;
   myTeam = teams.find(x=>x.id===me.team_id) || null;
+  document.documentElement.style.setProperty('--team', myTeam ? (myTeam.color||'#ffb020') : '#ffb020');
+}
+
+async function loadScores(){
+  const [rt,tp]=await Promise.all([
+    sb.from('cp_round_teams').select('*').eq('room_id',room.id),
+    sb.from('cp_taps').select('round_no,team_id,number,is_foul').eq('room_id',room.id)
+  ]);
+  results=rt.data||[]; taps=tp.data||[];
 }
 
 function subscribe(){
   if(ch) sb.removeChannel(ch);
-  const f = 'room_id=eq.'+room.id;
-  ch = sb.channel('cp_'+room.code)
-    .on('postgres_changes',{event:'*',schema:'public',table:'cp_players',filter:f}, async ()=>{ await refreshAll(); render(); })
-    .on('postgres_changes',{event:'*',schema:'public',table:'cp_teams',filter:f}, async ()=>{ await refreshAll(); render(); })
-    .on('postgres_changes',{event:'*',schema:'public',table:'cp_rounds',filter:f}, async ()=>{ await refreshAll(); render(); })
-    .on('postgres_changes',{event:'*',schema:'public',table:'cp_rooms',filter:'id=eq.'+room.id}, async ()=>{ await refreshAll(); render(); })
+  const f='room_id=eq.'+room.id;
+  const bump=async()=>{ await refreshAll(); render(); };
+  ch=sb.channel('cp_'+room.code)
+    .on('postgres_changes',{event:'*',schema:'public',table:'cp_players',filter:f}, bump)
+    .on('postgres_changes',{event:'*',schema:'public',table:'cp_teams',filter:f}, bump)
+    .on('postgres_changes',{event:'*',schema:'public',table:'cp_rounds',filter:f}, bump)
+    .on('postgres_changes',{event:'*',schema:'public',table:'cp_rooms',filter:'id=eq.'+room.id}, bump)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'cp_taps',filter:f}, e=>onRemoteTap(e.new))
     .subscribe();
 }
 
-/* ================= render ================= */
-function render(){
+/* ---------- render ---------- */
+async function render(){
+  if(room.status==='finished'){
+    cancelAnimationFrame(raf); running=false;
+    lobbyView.classList.add('hidden'); gameView.classList.add('hidden');
+    document.body.classList.add('scroll');
+    resultView.classList.remove('hidden');
+    await loadScores();
+    showResults();
+    return;
+  }
+  resultView.classList.add('hidden');
+  document.body.classList.remove('scroll');
+
   const live = room.status==='running' && round && round.go_at && me.team_id;
   if(live){
     lobbyView.classList.add('hidden');
@@ -342,7 +348,7 @@ function render(){
   }else{
     gameView.classList.add('hidden');
     lobbyView.classList.remove('hidden');
-    builtRound = -1;
+    builtRound=-1;
     renderLobby();
   }
 }
@@ -351,10 +357,7 @@ function renderLobby(){
   $('myTeamName').textContent = myTeam ? myTeam.name : 'Not assigned yet';
   const mates = myTeam ? players.filter(p=>p.team_id===myTeam.id) : players.filter(p=>!p.team_id);
   $('mates').innerHTML = mates.map(p=>`<span class="mate ${p.id===me.id?'me':''}">${esc(p.name)}</span>`).join('');
-  if(room.status==='finished'){
-    $('lobbyTitle').textContent='Game over';
-    $('lobbySub').textContent='The host has the final scores.';
-  }else if(room.status==='round_end'){
+  if(room.status==='round_end'){
     $('lobbyTitle').textContent='Round over';
     $('lobbySub').textContent='Waiting for the host to open the next round.';
   }else if(myTeam){
@@ -366,24 +369,21 @@ function renderLobby(){
   }
 }
 
-/* ================= round / board ================= */
+/* ---------- round ---------- */
 async function setupRound(){
-  if(builtRound === round.round_no) return;
-  builtRound = round.round_no;
+  if(builtRound===round.round_no) return;
+  builtRound=round.round_no;
   finished=false; running=false; tappedNums=new Set();
   cancelAnimationFrame(raf);
-
   $('gTeam').textContent = myTeam ? myTeam.name : 'Team';
   $('gRound').textContent = 'Round '+round.round_no+' of '+room.rounds_total;
   buildBoard(round.layout);
   buildLanes();
-
-  const {data:prev} = await sb.from('cp_taps').select('number')
+  const {data:prev}=await sb.from('cp_taps').select('number')
     .eq('room_id',room.id).eq('round_no',round.round_no)
     .eq('team_id',me.team_id).eq('is_foul',false);
   (prev||[]).forEach(t=>markTapped(t.number));
-
-  goMs = new Date(round.go_at).getTime();
+  goMs=new Date(round.go_at).getTime();
   countdownThenGo();
 }
 
@@ -393,8 +393,7 @@ function buildBoard(cells){
     const b=document.createElement('button');
     b.className='slab locked'; b.textContent=n; b.dataset.num=n;
     b.addEventListener('click',()=>tap(n));
-    $('board').appendChild(b);
-    slabs.push(b);
+    $('board').appendChild(b); slabs.push(b);
   });
   $('bar').style.width='0%';
   $('hit').textContent='0 / 20 stones';
@@ -406,16 +405,15 @@ function countdownThenGo(){
   ov.classList.remove('hidden');
   $('final').classList.add('hidden');
   const loop=()=>{
-    if(builtRound !== (round && round.round_no)) return;
-    const left = goMs - Date.now();
-    if(left > 0){
+    if(!round || builtRound!==round.round_no) return;
+    const left=goMs-Date.now();
+    if(left>0){
       $('ovTitle').classList.add('hidden'); $('ovText').classList.add('hidden');
       c.classList.remove('hidden');
-      c.textContent = left > 1000 ? Math.ceil(left/1000) : 'GO';
+      c.textContent = left>1000 ? Math.ceil(left/1000) : 'GO';
       requestAnimationFrame(loop);
     }else{
-      c.classList.add('hidden');
-      ov.classList.add('hidden');
+      c.classList.add('hidden'); ov.classList.add('hidden');
       slabs.forEach(s=>s.classList.remove('locked'));
       running=true;
       raf=requestAnimationFrame(tick);
@@ -426,12 +424,12 @@ function countdownThenGo(){
 }
 
 function tick(){
-  $('timer').textContent = fmtMs(Date.now()-goMs);
+  $('timer').textContent=fmtMs(Date.now()-goMs);
   raf=requestAnimationFrame(tick);
 }
 
-async function tap(n){
-  if(!running || finished || tappedNums.has(n)) return;
+function tap(n){
+  if(!running||finished||tappedNums.has(n)) return;
   markTapped(n);
   if(navigator.vibrate) navigator.vibrate(16);
   sb.from('cp_taps').insert({
@@ -442,45 +440,43 @@ async function tap(n){
 }
 
 function onRemoteTap(t){
-  if(!round || t.round_no!==round.round_no) return;
-  if(!me.team_id || t.team_id !== me.team_id) return;
+  if(!round||t.round_no!==round.round_no) return;
+  if(!me.team_id||t.team_id!==me.team_id) return;
   if(t.is_foul){ if(t.player_id!==me.id) flashFoul('FOUL'); return; }
   markTapped(t.number);
-  if(tappedNums.size===20 && running) finishRound();
+  if(tappedNums.size===20&&running) finishRound();
 }
 
 function markTapped(n){
   if(tappedNums.has(n)) return;
   tappedNums.add(n);
-  const b = slabs.find(s=>+s.dataset.num===n);
+  const b=slabs.find(s=>+s.dataset.num===n);
   if(b) b.classList.add('tapped');
-  $('hit').textContent = tappedNums.size+' / 20 stones';
-  $('bar').style.width = (tappedNums.size/20*100)+'%';
+  $('hit').textContent=tappedNums.size+' / 20 stones';
+  $('bar').style.width=(tappedNums.size/20*100)+'%';
 }
 
 async function finishRound(){
   if(finished) return;
   finished=true; running=false;
   cancelAnimationFrame(raf);
-  const dur = Date.now()-goMs;
-  $('timer').textContent = fmtMs(dur);
+  const dur=Date.now()-goMs;
+  $('timer').textContent=fmtMs(dur);
   $('ovTitle').textContent='Pit cleared';
   $('ovText').textContent='Waiting for the other teams.';
   $('ovTitle').classList.remove('hidden'); $('ovText').classList.remove('hidden');
-  $('final').textContent = fmtMs(dur);
+  $('final').textContent=fmtMs(dur);
   $('final').classList.remove('hidden');
   $('overlay').classList.remove('hidden');
-
   await sb.from('cp_round_teams').upsert({
     room_id:room.id, round_no:round.round_no, team_id:me.team_id,
     finished_at:new Date().toISOString(), duration_ms:dur
   },{onConflict:'room_id,round_no,team_id'});
 }
 
-/* ---- test foul button — real rules come in phase 3 ---- */
-$('foulTestBtn').addEventListener('click', async ()=>{
+$('foulTestBtn').addEventListener('click', ()=>{
   flashFoul('FOUL');
-  if(room && round && me && me.team_id){
+  if(room&&round&&me&&me.team_id){
     sb.from('cp_taps').insert({
       room_id:room.id, round_no:round.round_no, team_id:me.team_id,
       player_id:me.id, number:0, is_foul:true
@@ -488,7 +484,17 @@ $('foulTestBtn').addEventListener('click', async ()=>{
   }
 });
 
-/* ================= boot ================= */
+/* ---------- results ---------- */
+function showResults(){
+  const roundNos=rounds.map(r=>r.round_no);
+  $('sbPlayer').innerHTML = buildScoreboard(teams, roundNos, results, taps, room, me.team_id);
+  const {rows}=computeScores(teams, roundNos, results, taps, room);
+  const mine=rows.find(r=>r.team.id===me.team_id);
+  $('myResult').textContent = mine && mine.rank
+    ? `${mine.team.name} — rank ${mine.rank}, ${mine.score} points`
+    : (myTeam ? myTeam.name : '');
+}
+
 resume();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
