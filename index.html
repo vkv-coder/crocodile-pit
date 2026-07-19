@@ -523,7 +523,16 @@ async function tap(n, btn){
   const idx = seq.indexOf(n);
   if(idx === pos){ await recordGood(n); return; }
 
-  if(idx < pos){ await recordFoul('retap', btn); return; }
+  if(idx < pos){
+    // was this stone put down a moment ago by someone else?
+    const setter = roundTaps.filter(t=>!t.is_foul && +t.number===n)
+      .sort((a,b)=> new Date(b.tapped_at)-new Date(a.tapped_at))[0];
+    const gap = setter ? Date.now() - new Date(setter.tapped_at).getTime() : 1e9;
+    if(setter && setter.player_id !== me.id && gap <= ruleWindow(room)){
+      await recordFoul('double', btn); return;
+    }
+    await recordFoul('retap', btn); return;
+  }
   await recordFoul('sequence', btn);
 }
 

@@ -42,12 +42,14 @@ const escHtml = s => String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':
    ============================================================ */
 const FOUL_RULES = [
   { key:'sequence', label:'Out of sequence', help:'Tapped a stone that was not the one due next.' },
+  { key:'double',   label:'Same stone at once', help:'Two players hit the same stone within the window below.', hasWindow:true },
   { key:'retap',    label:'Re-tap',          help:'Tapped a stone that is already down.' },
   { key:'quota',    label:'Over quota',      help:'Player tried to tap after using up their allowance.' },
   { key:'early',    label:'Early tap',       help:'Tapped before GO.' }
 ];
 const DEFAULT_FOUL_RULES = {
-  sequence:{on:true,weight:1}, retap:{on:true,weight:1},
+  sequence:{on:true,weight:1}, double:{on:true,weight:1,window:400},
+  retap:{on:true,weight:1},
   quota:{on:true,weight:1},    early:{on:true,weight:1}
 };
 function ruleOn(room, key){
@@ -59,6 +61,10 @@ function ruleWeight(room, key){
   return r && r.weight ? +r.weight : 1;
 }
 const ruleLabel = k => (FOUL_RULES.find(r=>r.key===k)||{}).label || 'Foul';
+function ruleWindow(room){
+  const r=(room.foul_rules||DEFAULT_FOUL_RULES).double;
+  return r && r.window ? +r.window : 400;
+}
 
 /* ============================================================
    PROGRESS

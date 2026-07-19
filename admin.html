@@ -406,10 +406,18 @@ function drawFouls(){
     return `<div class="frow">
       <div class="sw ${cfg.on!==false?'on':''}" data-act="ftoggle" data-key="${r.key}"></div>
       <div class="fl"><b>${r.label}</b><small>${r.help}</small></div>
+      ${r.hasWindow?`<input type="number" min="50" max="3000" step="50" value="${cfg.window||400}" data-fwin="${r.key}" title="milliseconds" ${started?'disabled':''}>`:''}
       <input type="number" min="1" max="9" value="${cfg.weight||1}" data-fw="${r.key}" ${started?'disabled':''}>
     </div>`;
   }).join('');
   $('saveFoulBtn').classList.toggle('hidden', started);
+  document.querySelectorAll('[data-fwin]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const k=inp.dataset.fwin;
+      foulDraft[k] = foulDraft[k] || {on:true,weight:1};
+      foulDraft[k].window = +inp.value||400;
+    });
+  });
   document.querySelectorAll('[data-fw]').forEach(inp=>{
     inp.addEventListener('input', ()=>{
       const k=inp.dataset.fw;
