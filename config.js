@@ -11,19 +11,6 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   realtime: { params: { eventsPerSecond: 20 } }
 });
 
-/* ---------- team colours ---------- */
-const TEAM_COLORS = [
-  {name:'Red',    hex:'#e0472c'},
-  {name:'Blue',   hex:'#3b82f6'},
-  {name:'Yellow', hex:'#f5b301'},
-  {name:'Green',  hex:'#2fa35f'},
-  {name:'Purple', hex:'#8b5cf6'},
-  {name:'Orange', hex:'#f97316'},
-  {name:'Teal',   hex:'#14b8a6'},
-  {name:'Pink',   hex:'#ec4899'}
-];
-const colorName = hex => (TEAM_COLORS.find(c=>c.hex===hex)||{}).name || '';
-
 /* ---------- number layout: 1 and 20 only at row start / row end ---------- */
 function makeLayout(){
   const edges = [0,4,5,9,10,14,15,19];
@@ -101,8 +88,7 @@ function buildScoreboard(teams, roundNos, results, taps, room, highlightTeamId){
 
   let h = '<div class="sbScroll"><table class="sb">';
   h += '<thead><tr><th class="rl"></th>';
-  rows.forEach(r=> h += `<th class="tcol${hl(r.team.id)}" colspan="2" style="color:${r.team.color||'#ffb020'}">
-      <span class="dot" style="background:${r.team.color||'#ffb020'}"></span>${escHtml(r.team.name)}</th>`);
+  rows.forEach(r=> h += `<th class="tcol${hl(r.team.id)}" colspan="2">${escHtml(r.team.name)}</th>`);
   h += '</tr><tr><th class="rl">Round</th>';
   rows.forEach(r=> h += `<th class="sub${hl(r.team.id)}">Time</th><th class="sub${hl(r.team.id)}">Fouls</th>`);
   h += '</tr></thead><tbody>';
@@ -148,9 +134,8 @@ function injectScoreboardCss(){
   table.sb th.rl,table.sb td.rl{
     text-align:left;position:sticky;left:0;z-index:2;background:#10231a;
     font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6f9c7d;font-weight:700;}
-  table.sb th.tcol{font-family:'Bungee',cursive;font-size:14px;text-align:center;
+  table.sb th.tcol{font-family:'Bungee',cursive;font-size:14px;text-align:center;color:#ffb020;
     border-bottom:1px solid rgba(255,255,255,.14);letter-spacing:.02em;}
-  table.sb th.tcol .dot{display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:6px;vertical-align:middle;}
   table.sb th.sub{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6f9c7d;
     text-align:right;font-weight:700;padding-top:4px;padding-bottom:8px;}
   table.sb td.num{text-align:right;font-size:16px;font-weight:600;border-bottom:1px solid rgba(255,255,255,.06);}
