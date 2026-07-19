@@ -1,5 +1,5 @@
 // ============================================================
-// CROCODILE PIT — shared config and scoring
+// CROCODILE PIT — shared config, sequences, fouls, scoring
 // Supabase project: Dhobi-digital
 // ============================================================
 const SUPABASE_URL  = "https://jqqnnkzozjskziaizajg.supabase.co";
@@ -11,7 +11,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   realtime: { params: { eventsPerSecond: 20 } }
 });
 
-/* ---------- number layout: 1 and 20 only at row start / row end ---------- */
+/* ---------- board layout: 1 and 20 only at row start / row end ---------- */
 function makeLayout(){
   const edges = [0,4,5,9,10,14,15,19];
   const a = edges[Math.floor(Math.random()*edges.length)];
@@ -35,8 +35,47 @@ function fmtMs(ms){
   const s=Math.floor(ms/1000), cs=Math.floor((ms%1000)/10), m=Math.floor(s/60);
   return (m ? m+":"+String(s%60).padStart(2,"0") : String(s).padStart(2,"0"))+"."+String(cs).padStart(2,"0");
 }
-
 const escHtml = s => String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+/* ============================================================
+   FOUL RULES
+   ============================================================ */
+const FOUL_RULES = [
+  { key:'sequence', label:'Out of sequence', help:'Tapped a stone that was not the one due next.' },
+  { key:'retap',    label:'Re-tap',          help:'Tapped a stone that is already down.' },
+  { key:'quota',    label:'Over quota',      help:'Player tried to tap after using up their allowance.' },
+  { key:'early',    label:'Early tap',       help:'Tapped before GO.' }
+];
+const DEFAULT_FOUL_RULES = {
+  sequence:{on:true,weight:1}, retap:{on:true,weight:1},
+  quota:{on:true,weight:1},    early:{on:true,weight:1}
+};
+function ruleOn(room, key){
+  const r=(room.foul_rules||DEFAULT_FOUL_RULES)[key];
+  return r ? r.on!==false : true;
+}
+function ruleWeight(room, key){
+  const r=(room.foul_rules||DEFAULT_FOUL_RULES)[key];
+  return r && r.weight ? +r.weight : 1;
+}
+const ruleLabel = k => (FOUL_RULES.find(r=>r.key===k)||{}).label || 'Foul';
+
+/* ============================================================
+   PROGRESS
+   Every tap is replayed in time order.
+   A good tap puts the next stone down; a foul lifts the last one back up.
+   ============================================================ */
+function progressFrom(teamTaps){
+  const ordered=[...teamTaps].sort((a,b)=> new Date(a.tapped_at)-new Date(b.tapped_at));
+  let pos=0;
+  ordered.forEach(t=>{ pos = t.is_foul ? Math.max(0,pos-1) : pos+1; });
+  return Math.min(pos,20);
+}
+/* total foul weight for a team in a round */
+function foulWeight(teamTaps, room){
+  return teamTaps.filter(t=>t.is_foul)
+    .reduce((s,t)=> s + ruleWeight(room, t.rule||'sequence'), 0);
+}
 
 /* ---------- suggested scoring ---------- */
 function suggestScoring(teamCount){
@@ -57,8 +96,8 @@ function computeScores(teams, roundNos, results, taps, room){
     const per={};
     roundNos.forEach(rn=>{
       const r = results.find(x=>x.team_id===t.id && x.round_no===rn && x.duration_ms!=null);
-      per[rn] = { dur: r ? r.duration_ms : null,
-                  fouls: taps.filter(x=>x.team_id===t.id && x.round_no===rn && x.is_foul).length };
+      const mine = taps.filter(x=>x.team_id===t.id && x.round_no===rn);
+      per[rn] = { dur: r ? r.duration_ms : null, fouls: foulWeight(mine, room) };
     });
     let bestRound=null, best=null;
     roundNos.forEach(rn=>{
@@ -131,8 +170,7 @@ function injectScoreboardCss(){
   .sbScroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   table.sb{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;}
   table.sb th,table.sb td{padding:9px 10px;white-space:nowrap;}
-  table.sb th.rl,table.sb td.rl{
-    text-align:left;position:sticky;left:0;z-index:2;background:#10231a;
+  table.sb th.rl,table.sb td.rl{text-align:left;position:sticky;left:0;z-index:2;background:#10231a;
     font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6f9c7d;font-weight:700;}
   table.sb th.tcol{font-family:'Bungee',cursive;font-size:14px;text-align:center;color:#ffb020;
     border-bottom:1px solid rgba(255,255,255,.14);letter-spacing:.02em;}

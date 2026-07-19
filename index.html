@@ -27,24 +27,34 @@
   #foulBar{
     position:fixed;top:0;left:0;right:0;height:0;z-index:99;
     background:linear-gradient(var(--danger),#8e1c0c);
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Bungee',cursive;font-size:20px;color:#fff;letter-spacing:.12em;
-    overflow:hidden;transition:height .12s ease;pointer-events:none;
-    box-shadow:0 0 40px rgba(224,71,44,.8);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:'Bungee',cursive;color:#fff;overflow:hidden;
+    transition:height .12s ease;pointer-events:none;box-shadow:0 0 40px rgba(224,71,44,.8);
   }
-  #foulBar.on{height:64px;animation:foulPulse .45s steps(2,end) 3;}
-  @keyframes foulPulse{0%,100%{opacity:1}50%{opacity:.25}}
+  #foulBar .fb1{font-size:22px;letter-spacing:.14em;}
+  #foulBar .fb2{font-family:'Barlow Condensed';font-size:14px;font-weight:600;opacity:.9;letter-spacing:.04em;margin-top:2px;}
+  #foulBar.on{height:74px;animation:foulPulse .45s steps(2,end) 3;}
+  @keyframes foulPulse{0%,100%{opacity:1}50%{opacity:.3}}
   body.shake{animation:shake .4s;}
   @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(5px)}}
 
-  header{width:100%;max-width:520px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}
-  .brand h1{font-family:'Bungee',cursive;font-size:clamp(18px,5.5vw,26px);margin:0;text-shadow:0 2px 0 #04150c;}
-  .brand span{display:block;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:#6f9c7d;margin-top:5px;font-weight:600;}
+  header{width:100%;max-width:520px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px;}
+  .brand h1{font-family:'Bungee',cursive;font-size:clamp(17px,5.2vw,24px);margin:0;text-shadow:0 2px 0 #04150c;}
+  .brand span{display:block;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6f9c7d;margin-top:5px;font-weight:600;}
   .clock{text-align:right;}
-  .clock .t{font-family:'Bungee',cursive;font-size:clamp(24px,8vw,36px);line-height:1;color:var(--amber);font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(255,176,32,.35);}
-  .clock .lbl{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#6f9c7d;font-weight:700;}
+  .clock .t{font-family:'Bungee',cursive;font-size:clamp(23px,7.5vw,34px);line-height:1;color:var(--amber);font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(255,176,32,.35);}
+  .clock .lbl{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#6f9c7d;font-weight:700;}
 
-  .progress{width:100%;max-width:520px;height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:12px;}
+  /* next-up strip */
+  .strip{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:rgba(255,255,255,.06);border-radius:12px;padding:9px 14px;margin-bottom:8px;}
+  .strip .seqname{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8fb79c;font-weight:700;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .strip .next{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+  .strip .next em{font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6f9c7d;font-weight:700;}
+  .strip .next b{font-family:'Bungee',cursive;font-size:26px;color:var(--amber);line-height:1;}
+
+  .progress{width:100%;max-width:520px;height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:10px;}
   .progress i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#3fa46a,var(--amber));transition:width .18s ease;}
 
   .board-wrap{position:relative;width:100%;max-width:520px;flex:1;display:flex;align-items:center;}
@@ -62,18 +72,24 @@
     box-shadow:0 5px 0 var(--slab-edge),0 9px 16px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.55);
     color:#3a2c1c;font-family:'Bungee',cursive;font-size:clamp(18px,5.4vw,30px);
     display:flex;align-items:center;justify-content:center;cursor:pointer;
-    transition:transform .07s ease,box-shadow .07s ease,background .18s ease,color .18s ease;
+    transition:transform .09s ease,box-shadow .09s ease,background .2s ease,color .2s ease;
   }
   .slab:active{transform:translateY(4px);}
   .slab.locked{opacity:.45;filter:saturate(.4);cursor:not-allowed;}
-  .slab.tapped{background:linear-gradient(#20402c,#132a1c);color:#4e7a5f;box-shadow:inset 0 3px 10px rgba(0,0,0,.7);transform:translateY(5px);}
-  .slab:focus-visible{outline:3px solid var(--amber);outline-offset:3px;}
+  .slab.tapped{background:linear-gradient(#2b7a4c,#17482d);color:#bff0d2;
+    box-shadow:inset 0 3px 10px rgba(0,0,0,.6);transform:translateY(5px);}
+  .slab.reverted{animation:pop .45s ease;}
+  @keyframes pop{0%{transform:translateY(5px) scale(1)}40%{transform:translateY(-4px) scale(1.07)}100%{transform:translateY(0) scale(1)}}
+  .slab.bad{animation:badFlash .4s ease;}
+  @keyframes badFlash{0%,100%{background:linear-gradient(#dcc7a6,var(--slab) 55%,#b49b78)}50%{background:linear-gradient(#f08c78,#c0311a)}}
 
-  .overlay{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(6,15,10,.88);backdrop-filter:blur(3px);border-radius:14px;text-align:center;padding:20px;}
-  .overlay h2{font-family:'Bungee',cursive;margin:0 0 6px;font-size:clamp(20px,6.5vw,32px);}
-  .overlay p{margin:0 0 14px;color:#8fb79c;font-size:16px;}
-  .count{font-family:'Bungee',cursive;font-size:clamp(60px,22vw,110px);color:var(--amber);line-height:1;text-shadow:0 0 40px rgba(255,176,32,.4);}
-  .final{font-family:'Bungee',cursive;font-size:clamp(30px,11vw,50px);color:var(--amber);margin:2px 0 12px;font-variant-numeric:tabular-nums;}
+  .overlay{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(6,15,10,.9);backdrop-filter:blur(3px);border-radius:14px;text-align:center;padding:20px;}
+  .overlay h2{font-family:'Bungee',cursive;margin:0 0 6px;font-size:clamp(19px,6vw,30px);}
+  .overlay p{margin:0 0 12px;color:#8fb79c;font-size:16px;}
+  .seqline{font-family:'Barlow Condensed';font-weight:700;font-size:15px;color:var(--bone);
+    background:rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;margin:0 0 14px;line-height:1.6;max-width:460px;}
+  .count{font-family:'Bungee',cursive;font-size:clamp(56px,20vw,100px);color:var(--amber);line-height:1;text-shadow:0 0 40px rgba(255,176,32,.4);}
+  .final{font-family:'Bungee',cursive;font-size:clamp(28px,10vw,46px);color:var(--amber);margin:2px 0 12px;font-variant-numeric:tabular-nums;}
 
   .panel{width:100%;max-width:420px;margin:auto;text-align:center;}
   .panel h2{font-family:'Bungee',cursive;font-size:26px;margin:0 0 6px;}
@@ -85,7 +101,6 @@
   .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #a86400;}
   .btn.full{width:100%;}
   .btn.ghost{background:transparent;color:#8fb79c;box-shadow:inset 0 0 0 2px rgba(143,183,156,.35);font-size:13px;padding:10px 22px;}
-  .btn.red{background:linear-gradient(#f0634a,#c02f16);color:#fff;box-shadow:0 5px 0 #7d1c08;}
 
   .teamcard{background:rgba(255,255,255,.06);border-radius:14px;padding:18px;margin-top:14px;}
   .teamcard .tn{font-family:'Bungee',cursive;font-size:24px;color:var(--amber);}
@@ -93,8 +108,15 @@
   .mate{background:rgba(255,255,255,.09);padding:6px 13px;border-radius:99px;font-size:14px;font-weight:600;}
   .mate.me{background:var(--amber);color:#2a1a00;}
 
-  footer{width:100%;max-width:520px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#48705a;font-weight:700;}
+  footer{width:100%;max-width:520px;margin-top:9px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#48705a;font-weight:700;}
+  footer .taps{color:#8fb79c;}
+  footer .taps.low{color:var(--amber);}
+  footer .taps.out{color:var(--danger);}
   .err{color:var(--danger);font-weight:700;min-height:20px;font-size:15px;}
+
+  #blockNote{position:absolute;left:0;right:0;bottom:0;z-index:6;background:rgba(224,71,44,.94);
+    border-radius:0 0 14px 14px;padding:12px;text-align:center;font-weight:700;font-size:15px;}
 
   #resultView{width:100%;max-width:700px;margin:0 auto;padding:6px 0 30px;}
   #resultView h2{font-family:'Bungee',cursive;font-size:26px;margin:0 0 4px;text-align:center;}
@@ -105,7 +127,7 @@
 </head>
 <body>
 
-<div id="foulBar">FOUL</div>
+<div id="foulBar"><div class="fb1">FOUL</div><div class="fb2"></div></div>
 
 <section id="joinView" class="panel">
   <h2>Crocodile Pit</h2>
@@ -138,21 +160,31 @@
       <div class="lbl">Time</div>
     </div>
   </header>
+
+  <div class="strip">
+    <div class="seqname" id="seqName">Sequence</div>
+    <div class="next"><em>Next</em><b id="nextNum">–</b></div>
+  </div>
+
   <div class="progress"><i id="bar"></i></div>
+
   <div class="board-wrap">
     <div class="board" id="board">
       <div class="lanes" id="lanes"></div>
       <div class="overlay hidden" id="overlay">
         <h2 id="ovTitle">Get ready</h2>
         <p id="ovText">The host will open the pit.</p>
+        <div class="seqline hidden" id="seqLine"></div>
         <div class="count hidden" id="count">3</div>
         <div class="final hidden" id="final">00.00</div>
       </div>
+      <div id="blockNote" class="hidden">You have used all your taps. Your team must finish without you.</div>
     </div>
   </div>
+
   <footer>
     <span id="hit">0 / 20 stones</span>
-    <span><button class="btn red" id="foulTestBtn" style="padding:8px 18px;font-size:12px">Test foul</button></span>
+    <span class="taps" id="tapsLeft"></span>
   </footer>
 </section>
 
@@ -169,13 +201,17 @@
 <script src="config.js"></script>
 <script>
 let room=null, me=null, myTeam=null, teams=[], players=[], round=null, rounds=[], results=[], taps=[];
-let slabs=[], tappedNums=new Set(), running=false, raf=null, goMs=0, finished=false;
+let slabs=[], running=false, raf=null, goMs=0, finished=false;
 let ch=null, builtRound=-1, crocsBuilt=false;
+let seq=[], pos=0, roundTaps=[], seenIds=new Set();
 
 const $ = id => document.getElementById(id);
 const esc = escHtml;
 const joinView=$('joinView'), lobbyView=$('lobbyView'), gameView=$('gameView'), resultView=$('resultView');
 injectScoreboardCss();
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID()
+  : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+      const r=Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16);}));
 
 /* ---------- crocodiles ---------- */
 const CROC_SVG = `
@@ -229,12 +265,12 @@ function swim(el, initial){
 }
 
 /* ---------- foul flash ---------- */
-function flashFoul(msg){
+function flashFoul(rule){
   const bar=$('foulBar');
-  bar.textContent=msg||'FOUL';
+  bar.querySelector('.fb2').textContent = ruleLabel(rule);
   bar.classList.add('on');
   document.body.classList.add('shake');
-  if(navigator.vibrate) navigator.vibrate([90,60,90,60,140]);
+  if(navigator.vibrate) navigator.vibrate([90,60,90,60,160]);
   setTimeout(()=>{ bar.classList.remove('on'); document.body.classList.remove('shake'); },1400);
 }
 
@@ -257,7 +293,6 @@ async function join(){
   localStorage.setItem('cp_me', JSON.stringify({room_code:code, player_id:p.id}));
   await enterRoom();
 }
-
 async function resume(){
   const raw=localStorage.getItem('cp_me');
   if(!raw) return;
@@ -267,11 +302,9 @@ async function resume(){
     if(!r) return;
     const {data:p}=await sb.from('cp_players').select('*').eq('id',player_id).maybeSingle();
     if(!p) return;
-    room=r; me=p;
-    await enterRoom();
+    room=r; me=p; await enterRoom();
   }catch(e){}
 }
-
 async function leave(){
   if(me) await sb.from('cp_players').delete().eq('id',me.id);
   localStorage.removeItem('cp_me');
@@ -288,7 +321,6 @@ async function enterRoom(){
   subscribe();
   render();
 }
-
 async function refreshAll(){
   const [t,p,rd,rm]=await Promise.all([
     sb.from('cp_teams').select('*').eq('room_id',room.id).order('created_at'),
@@ -302,15 +334,13 @@ async function refreshAll(){
   me = players.find(x=>x.id===me.id) || me;
   myTeam = teams.find(x=>x.id===me.team_id) || null;
 }
-
 async function loadScores(){
   const [rt,tp]=await Promise.all([
     sb.from('cp_round_teams').select('*').eq('room_id',room.id),
-    sb.from('cp_taps').select('round_no,team_id,number,is_foul').eq('room_id',room.id)
+    sb.from('cp_taps').select('round_no,team_id,number,is_foul,rule').eq('room_id',room.id)
   ]);
   results=rt.data||[]; taps=tp.data||[];
 }
-
 function subscribe(){
   if(ch) sb.removeChannel(ch);
   const f='room_id=eq.'+room.id;
@@ -331,8 +361,7 @@ async function render(){
     lobbyView.classList.add('hidden'); gameView.classList.add('hidden');
     document.body.classList.add('scroll');
     resultView.classList.remove('hidden');
-    await loadScores();
-    showResults();
+    await loadScores(); showResults();
     return;
   }
   resultView.classList.add('hidden');
@@ -343,6 +372,7 @@ async function render(){
     lobbyView.classList.add('hidden');
     gameView.classList.remove('hidden');
     setupRound();
+    paintBlocked();
   }else{
     gameView.classList.add('hidden');
     lobbyView.classList.remove('hidden');
@@ -350,7 +380,6 @@ async function render(){
     renderLobby();
   }
 }
-
 function renderLobby(){
   $('myTeamName').textContent = myTeam ? myTeam.name : 'Not assigned yet';
   const mates = myTeam ? players.filter(p=>p.team_id===myTeam.id) : players.filter(p=>!p.team_id);
@@ -371,16 +400,27 @@ function renderLobby(){
 async function setupRound(){
   if(builtRound===round.round_no) return;
   builtRound=round.round_no;
-  finished=false; running=false; tappedNums=new Set();
+  finished=false; running=false;
+  roundTaps=[]; seenIds=new Set(); pos=0;
   cancelAnimationFrame(raf);
+
+  seq = Array.isArray(round.seq_order) && round.seq_order.length===20
+        ? round.seq_order.map(Number)
+        : Array.from({length:20},(_,i)=>i+1);
+
   $('gTeam').textContent = myTeam ? myTeam.name : 'Team';
   $('gRound').textContent = 'Round '+round.round_no+' of '+room.rounds_total;
+  $('seqName').textContent = round.seq_name || 'Straight 1 to 20';
+  $('seqLine').textContent = seq.join('  ·  ');
+
   buildBoard(round.layout);
   buildLanes();
-  const {data:prev}=await sb.from('cp_taps').select('number')
-    .eq('room_id',room.id).eq('round_no',round.round_no)
-    .eq('team_id',me.team_id).eq('is_foul',false);
-  (prev||[]).forEach(t=>markTapped(t.number));
+
+  const {data:prev}=await sb.from('cp_taps').select('id,number,is_foul,rule,player_id,tapped_at')
+    .eq('room_id',room.id).eq('round_no',round.round_no).eq('team_id',me.team_id);
+  (prev||[]).forEach(t=>{ if(!seenIds.has(t.id)){ seenIds.add(t.id); roundTaps.push(t); } });
+  recompute();
+
   goMs=new Date(round.go_at).getTime();
   countdownThenGo();
 }
@@ -390,7 +430,7 @@ function buildBoard(cells){
   cells.forEach(n=>{
     const b=document.createElement('button');
     b.className='slab locked'; b.textContent=n; b.dataset.num=n;
-    b.addEventListener('click',()=>tap(n));
+    b.addEventListener('click',()=>tap(n,b));
     $('board').appendChild(b); slabs.push(b);
   });
   $('bar').style.width='0%';
@@ -402,56 +442,126 @@ function countdownThenGo(){
   const ov=$('overlay'), c=$('count');
   ov.classList.remove('hidden');
   $('final').classList.add('hidden');
+  $('seqLine').classList.remove('hidden');
   const loop=()=>{
     if(!round || builtRound!==round.round_no) return;
     const left=goMs-Date.now();
     if(left>0){
-      $('ovTitle').classList.add('hidden'); $('ovText').classList.add('hidden');
+      $('ovTitle').textContent='Tap them in this order';
+      $('ovText').textContent = round.seq_name || '';
+      $('ovTitle').classList.remove('hidden'); $('ovText').classList.remove('hidden');
       c.classList.remove('hidden');
       c.textContent = left>1000 ? Math.ceil(left/1000) : 'GO';
       requestAnimationFrame(loop);
     }else{
       c.classList.add('hidden'); ov.classList.add('hidden');
+      $('seqLine').classList.add('hidden');
       slabs.forEach(s=>s.classList.remove('locked'));
       running=true;
       raf=requestAnimationFrame(tick);
-      if(tappedNums.size===20) finishRound();
+      if(pos===20) finishRound();
     }
   };
   loop();
 }
-
 function tick(){
   $('timer').textContent=fmtMs(Date.now()-goMs);
   raf=requestAnimationFrame(tick);
 }
 
-function tap(n){
-  if(!running||finished||tappedNums.has(n)) return;
-  markTapped(n);
-  if(navigator.vibrate) navigator.vibrate(16);
-  sb.from('cp_taps').insert({
-    room_id:room.id, round_no:round.round_no, team_id:me.team_id,
-    player_id:me.id, number:n, is_foul:false
+/* ---------- progress ---------- */
+function recompute(){
+  pos = progressFrom(roundTaps);
+  const down = new Set(seq.slice(0,pos));
+  slabs.forEach(s=>{
+    const n=+s.dataset.num;
+    const wasDown=s.classList.contains('tapped');
+    if(down.has(n)) s.classList.add('tapped');
+    else{
+      s.classList.remove('tapped');
+      if(wasDown){
+        s.classList.add('reverted');
+        setTimeout(()=>s.classList.remove('reverted'),460);
+      }
+    }
   });
-  if(tappedNums.size===20) finishRound();
+  $('hit').textContent = pos+' / 20 stones';
+  $('bar').style.width = (pos/20*100)+'%';
+  $('nextNum').textContent = pos<20 ? seq[pos] : '✓';
+  paintTapsLeft();
+}
+
+function myTapCount(){
+  const since = me.quota_reset_at ? new Date(me.quota_reset_at).getTime() : 0;
+  return roundTaps.filter(t=>t.player_id===me.id && new Date(t.tapped_at).getTime()>=since).length;
+}
+function tapsLeft(){ return Math.max(0, (room.tap_quota||0) - myTapCount()); }
+function paintTapsLeft(){
+  const q=room.tap_quota||0;
+  if(!q){ $('tapsLeft').textContent=''; return; }
+  const l=tapsLeft();
+  $('tapsLeft').textContent = l+' tap'+(l===1?'':'s')+' left';
+  $('tapsLeft').className = 'taps '+(l===0?'out':(l<=2?'low':''));
+}
+function paintBlocked(){
+  const out = me.blocked || (room.tap_quota>0 && tapsLeft()===0);
+  $('blockNote').classList.toggle('hidden', !out);
+}
+
+/* ---------- tapping ---------- */
+async function tap(n, btn){
+  if(!running || finished) return;
+
+  // quota
+  if(room.tap_quota>0 && (me.blocked || tapsLeft()<=0)){
+    if(ruleOn(room,'quota')) await recordFoul('quota', btn);
+    else { flashFoul('quota'); }
+    paintBlocked();
+    return;
+  }
+
+  const idx = seq.indexOf(n);
+  if(idx === pos){ await recordGood(n); return; }
+
+  if(idx < pos){ await recordFoul('retap', btn); return; }
+  await recordFoul('sequence', btn);
+}
+
+async function recordGood(n){
+  const row={ id:uuid(), room_id:room.id, round_no:round.round_no, team_id:me.team_id,
+    player_id:me.id, number:n, is_foul:false, rule:null, tapped_at:new Date().toISOString() };
+  seenIds.add(row.id); roundTaps.push(row); recompute();
+  if(navigator.vibrate) navigator.vibrate(16);
+  sb.from('cp_taps').insert(row);
+  if(pos===20) finishRound();
+  paintBlocked();
+}
+
+async function recordFoul(rule, btn){
+  if(!ruleOn(room, rule)){ flashFoul(rule); return; }
+  const row={ id:uuid(), room_id:room.id, round_no:round.round_no, team_id:me.team_id,
+    player_id:me.id, number:0, is_foul:true, rule, tapped_at:new Date().toISOString() };
+  seenIds.add(row.id); roundTaps.push(row);
+  if(btn){ btn.classList.add('bad'); setTimeout(()=>btn.classList.remove('bad'),420); }
+  flashFoul(rule);
+  recompute();
+  sb.from('cp_taps').insert(row);
+
+  if(rule!=='quota' && room.tap_quota>0 && tapsLeft()===0 && !me.blocked){
+    me.blocked=true;
+    sb.from('cp_players').update({blocked:true}).eq('id',me.id);
+  }
+  paintBlocked();
 }
 
 function onRemoteTap(t){
-  if(!round||t.round_no!==round.round_no) return;
-  if(!me.team_id||t.team_id!==me.team_id) return;
-  if(t.is_foul){ if(t.player_id!==me.id) flashFoul('FOUL'); return; }
-  markTapped(t.number);
-  if(tappedNums.size===20&&running) finishRound();
-}
-
-function markTapped(n){
-  if(tappedNums.has(n)) return;
-  tappedNums.add(n);
-  const b=slabs.find(s=>+s.dataset.num===n);
-  if(b) b.classList.add('tapped');
-  $('hit').textContent=tappedNums.size+' / 20 stones';
-  $('bar').style.width=(tappedNums.size/20*100)+'%';
+  if(!round || t.round_no!==round.round_no) return;
+  if(!me.team_id || t.team_id!==me.team_id) return;
+  if(seenIds.has(t.id)) return;
+  seenIds.add(t.id); roundTaps.push(t);
+  if(t.is_foul && t.player_id!==me.id) flashFoul(t.rule||'sequence');
+  recompute();
+  if(pos===20 && running) finishRound();
 }
 
 async function finishRound(){
@@ -463,24 +573,16 @@ async function finishRound(){
   $('ovTitle').textContent='Pit cleared';
   $('ovText').textContent='Waiting for the other teams.';
   $('ovTitle').classList.remove('hidden'); $('ovText').classList.remove('hidden');
+  $('seqLine').classList.add('hidden');
   $('final').textContent=fmtMs(dur);
   $('final').classList.remove('hidden');
   $('overlay').classList.remove('hidden');
+  $('blockNote').classList.add('hidden');
   await sb.from('cp_round_teams').upsert({
     room_id:room.id, round_no:round.round_no, team_id:me.team_id,
     finished_at:new Date().toISOString(), duration_ms:dur
   },{onConflict:'room_id,round_no,team_id'});
 }
-
-$('foulTestBtn').addEventListener('click', ()=>{
-  flashFoul('FOUL');
-  if(room&&round&&me&&me.team_id){
-    sb.from('cp_taps').insert({
-      room_id:room.id, round_no:round.round_no, team_id:me.team_id,
-      player_id:me.id, number:0, is_foul:true
-    });
-  }
-});
 
 /* ---------- results ---------- */
 function showResults(){

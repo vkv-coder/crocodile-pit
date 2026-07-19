@@ -43,7 +43,6 @@
   .ok{color:var(--green);font-weight:700;min-height:20px;}
   .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;}
 
-  /* assign bar */
   .assignBar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;border-radius:12px;
     background:rgba(255,255,255,.06);margin-bottom:12px;position:sticky;top:0;z-index:5;backdrop-filter:blur(6px);}
   .tbtn{font-family:'Bungee',cursive;font-size:13px;padding:10px 16px;border:0;border-radius:99px;cursor:pointer;
@@ -52,7 +51,6 @@
   .tbtn .n{opacity:.65;font-size:11px;margin-left:6px;}
   .tbtn.clear{background:transparent;color:#8fb79c;box-shadow:inset 0 0 0 2px rgba(143,183,156,.3);}
 
-  /* player rows */
   .prow{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;background:rgba(255,255,255,.04);margin-bottom:6px;cursor:pointer;border:1px solid transparent;}
   .prow.ticked{background:rgba(255,176,32,.14);border-color:rgba(255,176,32,.5);}
   .tick{width:22px;height:22px;border-radius:6px;border:2px solid #5f8770;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:15px;color:#2a1a00;font-weight:700;}
@@ -67,6 +65,27 @@
   .teamblock .tname{font-family:'Bungee',cursive;font-size:16px;color:var(--amber);}
   .prog{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:9px;}
   .prog i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--amber));transition:width .2s;}
+
+  /* sequences */
+  .seqrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);margin-bottom:6px;}
+  .seqrow .sn{font-weight:700;font-size:16px;flex:0 0 auto;}
+  .seqrow .so{flex:1;color:#8fb79c;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums;}
+
+  /* foul rules */
+  .frow{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);}
+  .frow:last-child{border-bottom:0;}
+  .frow .fl{flex:1;}
+  .frow .fl b{font-size:16px;font-weight:700;display:block;}
+  .frow .fl small{color:#8fb79c;font-size:13px;}
+  .frow input[type=number]{width:74px;text-align:center;padding:9px;font-size:16px;}
+  .sw{width:52px;height:30px;border-radius:99px;background:rgba(255,255,255,.14);position:relative;cursor:pointer;flex:0 0 auto;transition:background .15s;}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:99px;background:#8fb79c;transition:transform .15s,background .15s;}
+  .sw.on{background:rgba(63,164,106,.5);}
+  .sw.on::after{transform:translateX(22px);background:#bff0d2;}
+
+  .blocked{display:inline-flex;align-items:center;gap:8px;background:rgba(224,71,44,.16);color:#ff9d86;
+    padding:7px 12px;border-radius:99px;font-size:14px;font-weight:700;margin:0 6px 6px 0;}
+  .blocked button{background:transparent;border:0;color:#ffd88a;font-weight:700;cursor:pointer;font-family:'Barlow Condensed';font-size:14px;text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -129,6 +148,7 @@
     <div class="row">
       <div><label>Teams</label><input type="number" id="nTeams" min="2" max="12" value="4"></div>
       <div><label>Rounds</label><input type="number" id="nRounds" min="1" max="12" value="4"></div>
+      <div><label>Taps each</label><input type="number" id="nQuota" min="0" max="20" value="5"></div>
     </div>
     <p class="muted" id="splitHint" style="margin:10px 0 0"></p>
     <div class="row" style="margin-top:16px">
@@ -145,6 +165,31 @@
   </div>
   <div class="card hidden" id="lockedCard"><p class="muted" id="lockedText"></p></div>
 
+  <!-- foul rules -->
+  <h3>Foul rules</h3>
+  <div class="card">
+    <div id="foulList"></div>
+    <p class="muted" style="margin:12px 0 0">A foul rejects the tap, flashes red, and lifts the team's last correct stone back up — they must tap it again before carrying on. Weight is how many fouls that mistake counts as.</p>
+    <div style="height:12px"></div>
+    <button class="btn ghost" id="saveFoulBtn">Save foul rules</button>
+    <p class="ok" id="foulMsg"></p>
+  </div>
+
+  <!-- sequences -->
+  <h3>Sequences</h3>
+  <div class="card">
+    <p class="muted" style="margin:0 0 12px">One is picked at random for each round, the same one for every team. Tick a sequence off to keep it out of the draw.</p>
+    <div id="seqList"></div>
+    <div style="height:14px"></div>
+    <label>Add your own</label>
+    <input type="text" id="newSeqName" placeholder="Name, e.g. Start at 7, wrap to 6" maxlength="40">
+    <div style="height:8px"></div>
+    <input type="text" id="newSeqOrder" placeholder="All 20 numbers in order, e.g. 7,8,9,...,6">
+    <div style="height:12px"></div>
+    <button class="btn" id="addSeqBtn">Add sequence</button>
+    <p class="err" id="seqErr"></p>
+  </div>
+
   <!-- assign -->
   <div id="assignWrap" class="hidden">
     <h3>Assign to teams</h3>
@@ -159,7 +204,6 @@
     </div>
   </div>
 
-  <!-- teams -->
   <div id="teamsWrap" class="hidden">
     <h3>Teams</h3>
     <div id="teamList"></div>
@@ -179,6 +223,10 @@
 
   <div id="monitor" class="hidden">
     <h3>Live</h3>
+    <div class="card hidden" id="blockedCard">
+      <label>Blocked players — tap to give them a fresh set of taps</label>
+      <div id="blockedList"></div>
+    </div>
     <div id="liveList"></div>
   </div>
 
@@ -198,9 +246,8 @@ const esc = escHtml;
 const TEAM_NAMES = ['Team A','Team B','Team C','Team D','Team E','Team F','Team G','Team H','Team I','Team J','Team K','Team L'];
 injectScoreboardCss();
 
-let room=null, teams=[], players=[], rounds=[], taps=[], results=[];
-let ch=null, poll=null, touchedPts=false;
-let ticked = new Set();
+let room=null, teams=[], players=[], rounds=[], taps=[], results=[], sequences=[];
+let ch=null, poll=null, touchedPts=false, ticked=new Set(), foulDraft=null;
 
 /* ============ PIN ============ */
 $('pinBtn').addEventListener('click', ()=>{
@@ -222,7 +269,7 @@ $('createBtn').addEventListener('click', async ()=>{
   const {data:exists}=await sb.from('cp_rooms').select('id').eq('code',code).maybeSingle();
   if(exists){ $('createErr').textContent='That code is already in use. Pick another, or reopen it below.'; return; }
   const {data,error}=await sb.from('cp_rooms').insert({
-    code, teams_planned:0, rounds_total:4, top_points:1000, last_points:250, foul_multiplier:100
+    code, teams_planned:0, rounds_total:4, top_points:1000, last_points:250, foul_multiplier:100, tap_quota:5
   }).select().single();
   if(error){ $('createErr').textContent='Could not create the room.'; return; }
   room=data; localStorage.setItem('cp_host_room',code); openConsole();
@@ -256,6 +303,7 @@ async function openConsole(){
   $('console').classList.remove('hidden');
   $('roomCode').textContent=room.code;
   await loadAll();
+  foulDraft = JSON.parse(JSON.stringify(room.foul_rules || DEFAULT_FOUL_RULES));
   fillSetupInputs();
   subscribe();
   clearInterval(poll);
@@ -264,16 +312,17 @@ async function openConsole(){
 }
 
 async function loadAll(){
-  const [rm,t,p,rd]=await Promise.all([
+  const [rm,t,p,rd,sq]=await Promise.all([
     sb.from('cp_rooms').select('*').eq('id',room.id).maybeSingle(),
     sb.from('cp_teams').select('*').eq('room_id',room.id).order('created_at'),
     sb.from('cp_players').select('*').eq('room_id',room.id).order('name'),
-    sb.from('cp_rounds').select('*').eq('room_id',room.id).order('round_no')
+    sb.from('cp_rounds').select('*').eq('room_id',room.id).order('round_no'),
+    sb.from('cp_sequences').select('*').order('created_at')
   ]);
   if(rm.data) room=rm.data;
-  teams=t.data||[]; players=p.data||[]; rounds=rd.data||[];
+  teams=t.data||[]; players=p.data||[]; rounds=rd.data||[]; sequences=sq.data||[];
   const [tp,rt]=await Promise.all([
-    sb.from('cp_taps').select('round_no,team_id,number,is_foul').eq('room_id',room.id),
+    sb.from('cp_taps').select('round_no,team_id,player_id,number,is_foul,rule').eq('room_id',room.id),
     sb.from('cp_round_teams').select('*').eq('room_id',room.id)
   ]);
   taps=tp.data||[]; results=rt.data||[];
@@ -293,6 +342,7 @@ function subscribe(){
 /* ============ setup ============ */
 function fillSetupInputs(){
   $('nRounds').value=room.rounds_total||4;
+  $('nQuota').value=room.tap_quota!=null?room.tap_quota:5;
   if(room.teams_planned){
     $('nTeams').value=room.teams_planned;
     $('topPts').value=room.top_points; $('lastPts').value=room.last_points; $('foulMult').value=room.foul_multiplier;
@@ -308,20 +358,26 @@ function previewLadder(){
   const n=+$('nTeams').value||4, top=+$('topPts').value||0, last=+$('lastPts').value||0;
   $('ladderPreview').textContent='Points by rank: '+pointsLadder(n,top,last).join(' · ')
     +' — each foul in the counted round costs '+(+$('foulMult').value||0)+'.';
-  const P=players.length;
-  $('splitHint').textContent = (P&&n)
-    ? `${P} players across ${n} teams — about ${Math.floor(P/n)===Math.ceil(P/n)?Math.floor(P/n):Math.floor(P/n)+' to '+Math.ceil(P/n)} per team.`
-    : 'Wait until the players have joined, then choose how many teams.';
+  const P=players.length, q=+$('nQuota').value||0;
+  const per = (P&&n) ? (Math.floor(P/n)===Math.ceil(P/n)?Math.floor(P/n):Math.floor(P/n)+' to '+Math.ceil(P/n)) : null;
+  let msg = per ? `${P} players across ${n} teams — about ${per} per team.` : 'Wait until the players have joined, then choose how many teams.';
+  if(per && q){
+    const smallest=Math.floor(P/n);
+    msg += ` At ${q} taps each, the smallest team can make ${smallest*q} taps${smallest*q<20?' — too few for 20 stones, raise it.':'.'}`;
+  }
+  $('splitHint').textContent = msg;
 }
 $('nTeams').addEventListener('input', ()=>{ if(!touchedPts) suggest(); previewLadder(); });
-['topPts','lastPts','foulMult'].forEach(id=>$(id).addEventListener('input',()=>{ touchedPts=true; previewLadder(); }));
-$('nRounds').addEventListener('input', previewLadder);
+['topPts','lastPts','foulMult','nQuota','nRounds'].forEach(id=>$(id).addEventListener('input',()=>{
+  if(id==='topPts'||id==='lastPts'||id==='foulMult') touchedPts=true;
+  previewLadder();
+}));
 
 $('saveSetupBtn').addEventListener('click', async ()=>{
   const n=+$('nTeams').value||0;
   if(n<2){ $('setupMsg').textContent='Need at least 2 teams.'; return; }
   await sb.from('cp_rooms').update({
-    teams_planned:n, rounds_total:+$('nRounds').value||4,
+    teams_planned:n, rounds_total:+$('nRounds').value||4, tap_quota:+$('nQuota').value||0,
     top_points:+$('topPts').value||0, last_points:+$('lastPts').value||0,
     foul_multiplier:+$('foulMult').value||0
   }).eq('id',room.id);
@@ -342,6 +398,59 @@ $('saveSetupBtn').addEventListener('click', async ()=>{
   draw();
 });
 
+/* ============ foul rules ============ */
+function drawFouls(){
+  const started = room.current_round>0;
+  $('foulList').innerHTML = FOUL_RULES.map(r=>{
+    const cfg = foulDraft[r.key] || {on:true,weight:1};
+    return `<div class="frow">
+      <div class="sw ${cfg.on!==false?'on':''}" data-act="ftoggle" data-key="${r.key}"></div>
+      <div class="fl"><b>${r.label}</b><small>${r.help}</small></div>
+      <input type="number" min="1" max="9" value="${cfg.weight||1}" data-fw="${r.key}" ${started?'disabled':''}>
+    </div>`;
+  }).join('');
+  $('saveFoulBtn').classList.toggle('hidden', started);
+  document.querySelectorAll('[data-fw]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const k=inp.dataset.fw;
+      foulDraft[k] = foulDraft[k] || {on:true};
+      foulDraft[k].weight = +inp.value||1;
+    });
+  });
+}
+$('saveFoulBtn').addEventListener('click', async ()=>{
+  await sb.from('cp_rooms').update({foul_rules:foulDraft}).eq('id',room.id);
+  await loadAll();
+  $('foulMsg').textContent='Saved.';
+  setTimeout(()=>{ $('foulMsg').textContent=''; },2500);
+  draw();
+});
+
+/* ============ sequences ============ */
+function drawSequences(){
+  $('seqList').innerHTML = sequences.length ? sequences.map(s=>`
+    <div class="seqrow">
+      <div class="sw ${s.active?'on':''}" data-act="seqtoggle" data-id="${s.id}"></div>
+      <div class="sn">${esc(s.name)}</div>
+      <div class="so">${(s.seq_order||[]).join(' ')}</div>
+      <span class="rm" data-act="seqdel" data-id="${s.id}" style="cursor:pointer">×</span>
+    </div>`).join('')
+    : '<span class="muted">No sequences yet. Run phase3.sql to load the standard ones.</span>';
+}
+$('addSeqBtn').addEventListener('click', async ()=>{
+  const name=$('newSeqName').value.trim();
+  const raw=$('newSeqOrder').value.trim();
+  $('seqErr').textContent='';
+  if(!name){ $('seqErr').textContent='Give the sequence a name.'; return; }
+  const nums = raw.split(/[^0-9]+/).filter(Boolean).map(Number);
+  if(nums.length!==20){ $('seqErr').textContent=`Needs all 20 numbers — you gave ${nums.length}.`; return; }
+  const sorted=[...nums].sort((a,b)=>a-b);
+  for(let i=0;i<20;i++) if(sorted[i]!==i+1){ $('seqErr').textContent='Must use each number from 1 to 20 exactly once.'; return; }
+  await sb.from('cp_sequences').insert({name, seq_order:nums});
+  $('newSeqName').value=''; $('newSeqOrder').value='';
+  await loadAll(); draw();
+});
+
 /* ============ draw ============ */
 function draw(){
   const started = room.current_round>0;
@@ -349,23 +458,25 @@ function draw(){
   const live = room.status==='running' && cur;
 
   $('roomMeta').textContent = room.teams_planned
-    ? `${room.rounds_total} rounds · ${teams.length} teams · 1st ${room.top_points}, last ${room.last_points}, foul −${room.foul_multiplier}`
+    ? `${room.rounds_total} rounds · ${teams.length} teams · ${room.tap_quota} taps each · 1st ${room.top_points}, last ${room.last_points}, foul −${room.foul_multiplier}`
     : 'Not set up yet.';
 
   $('joinCount').textContent = players.length + (players.length===1?' player present':' players present');
   $('joinHint').textContent = players.length ? 'Everyone below has joined the room.' : 'Share the room code. Names appear here as they join.';
 
-  ['nTeams','nRounds','topPts','lastPts','foulMult'].forEach(id=>$(id).disabled=started);
+  ['nTeams','nRounds','nQuota','topPts','lastPts','foulMult'].forEach(id=>$(id).disabled=started);
   $('setupCard').classList.toggle('hidden', started);
   $('lockedCard').classList.toggle('hidden', !started);
   if(started){
-    $('lockedText').textContent = `${teams.length} teams · ${room.rounds_total} rounds · points ${pointsLadder(teams.length,room.top_points,room.last_points).join(' · ')} · foul −${room.foul_multiplier}. Locked now the game has begun.`;
+    $('lockedText').textContent = `${teams.length} teams · ${room.rounds_total} rounds · ${room.tap_quota} taps each · points ${pointsLadder(teams.length,room.top_points,room.last_points).join(' · ')} · foul −${room.foul_multiplier}. Locked now the game has begun.`;
   }else previewLadder();
+
+  drawFouls();
+  drawSequences();
 
   $('assignWrap').classList.toggle('hidden', !teams.length || live || room.status==='finished');
   $('teamsWrap').classList.toggle('hidden', !teams.length);
 
-  // assign bar
   $('assignBar').className = 'assignBar' + (ticked.size ? ' armed' : '');
   $('assignBar').innerHTML = teams.map(t=>{
     const n=players.filter(p=>p.team_id===t.id).length;
@@ -375,7 +486,6 @@ function draw(){
     ? `${ticked.size} ticked — now tap a team above.`
     : 'Tick the players you want, then tap a team. They all go across at once.';
 
-  // player list
   $('plist').innerHTML = players.length ? players.map(p=>{
     const t=teams.find(x=>x.id===p.team_id);
     return `<div class="prow ${ticked.has(p.id)?'ticked':''}" data-act="tick" data-id="${p.id}">
@@ -386,7 +496,6 @@ function draw(){
     </div>`;
   }).join('') : '<span class="muted">Nobody has joined yet.</span>';
 
-  // team list
   $('teamList').innerHTML = teams.map(t=>{
     const mem=players.filter(p=>p.team_id===t.id);
     return `<div class="teamblock">
@@ -402,7 +511,6 @@ function draw(){
   }).join('');
   $('addTeamBtn').classList.toggle('hidden', started);
 
-  // scoreboard
   if(room.current_round>0){
     $('results').classList.remove('hidden');
     $('sbHost').innerHTML = buildScoreboard(teams, rounds.map(r=>r.round_no), results, taps, room, null);
@@ -417,7 +525,7 @@ function draw(){
     return;
   }
   if(live){
-    $('roundState').textContent = `Round ${cur.round_no} of ${room.rounds_total} running — ${done} of ${teams.length} teams finished.`;
+    $('roundState').innerHTML = `Round ${cur.round_no} of ${room.rounds_total} — <strong>${esc(cur.seq_name||'')}</strong><br>${done} of ${teams.length} teams finished.`;
     $('openBtn').classList.add('hidden');
     $('closeBtn').classList.remove('hidden');
     $('finishBtn').classList.add('hidden');
@@ -432,6 +540,7 @@ function draw(){
 
   const next=room.current_round+1;
   const teamsWithPlayers=teams.filter(t=>players.some(p=>p.team_id===t.id)).length;
+  const activeSeq=sequences.filter(s=>s.active).length;
   if(!teams.length){
     $('roundState').textContent='Save the setup above to build the teams.';
     $('openBtn').classList.add('hidden'); $('finishBtn').classList.add('hidden');
@@ -441,27 +550,41 @@ function draw(){
     $('finishBtn').classList.remove('hidden');
   }else{
     $('roundState').textContent = room.current_round===0
-      ? (teamsWithPlayers<2 ? 'Put players into at least 2 teams, then declare open.' : 'Ready. Everyone is waiting.')
+      ? (teamsWithPlayers<2 ? 'Put players into at least 2 teams, then declare open.'
+         : (!activeSeq ? 'Turn on at least one sequence first.' : 'Ready. Everyone is waiting.'))
       : `Round ${room.current_round} finished.`;
     $('openBtn').textContent='Declare open — start round '+next;
     $('openBtn').classList.remove('hidden');
-    $('openBtn').disabled = teamsWithPlayers<2;
+    $('openBtn').disabled = teamsWithPlayers<2 || !activeSeq;
     $('finishBtn').classList.toggle('hidden', room.current_round===0);
   }
 }
 
 function drawLive(cur){
+  const blocked=players.filter(p=>p.blocked);
+  $('blockedCard').classList.toggle('hidden', !blocked.length);
+  $('blockedList').innerHTML = blocked.map(p=>{
+    const t=teams.find(x=>x.id===p.team_id);
+    return `<span class="blocked">${esc(p.name)}${t?' · '+esc(t.name):''}
+      <button data-act="unblock" data-id="${p.id}">unblock</button></span>`;
+  }).join('');
+
   $('liveList').innerHTML = teams.map(t=>{
     const mine=taps.filter(x=>x.round_no===cur.round_no && x.team_id===t.id);
-    const hits=new Set(mine.filter(x=>!x.is_foul).map(x=>x.number)).size;
-    const fouls=mine.filter(x=>x.is_foul).length;
+    const pos=progressFrom(mine);
+    const fouls=foulWeight(mine, room);
     const res=results.find(r=>r.round_no===cur.round_no && r.team_id===t.id);
+    const byRule=FOUL_RULES.map(r=>{
+      const c=mine.filter(x=>x.is_foul&&x.rule===r.key).length;
+      return c?`${r.label} ${c}`:null;
+    }).filter(Boolean).join(' · ');
     return `<div class="teamblock">
       <div class="th">
         <span class="tname">${esc(t.name)}</span>
-        <span class="muted">${res&&res.duration_ms!=null ? fmtMs(res.duration_ms) : hits+'/20'} · ${fouls} foul${fouls===1?'':'s'}</span>
+        <span class="muted">${res&&res.duration_ms!=null ? fmtMs(res.duration_ms) : pos+'/20'} · ${fouls} foul${fouls===1?'':'s'}</span>
       </div>
-      <div class="prog"><i style="width:${hits/20*100}%"></i></div>
+      <div class="prog"><i style="width:${pos/20*100}%"></i></div>
+      ${byRule?`<p class="muted" style="margin:8px 0 0;font-size:13px">${byRule}</p>`:''}
     </div>`;
   }).join('');
 }
@@ -478,6 +601,27 @@ document.addEventListener('click', async e=>{
   if(!el) return;
   const act=el.dataset.act, id=el.dataset.id;
 
+  if(act==='ftoggle'){
+    if(room.current_round>0) return;
+    const k=el.dataset.key;
+    foulDraft[k]=foulDraft[k]||{weight:1};
+    foulDraft[k].on = !(foulDraft[k].on!==false);
+    drawFouls(); return;
+  }
+  if(act==='seqtoggle'){
+    const s=sequences.find(x=>x.id===id);
+    await sb.from('cp_sequences').update({active:!s.active}).eq('id',id);
+    await loadAll(); draw(); return;
+  }
+  if(act==='seqdel'){
+    if(!confirm('Delete this sequence for good?')) return;
+    await sb.from('cp_sequences').delete().eq('id',id);
+    await loadAll(); draw(); return;
+  }
+  if(act==='unblock'){
+    await sb.from('cp_players').update({blocked:false, quota_reset_at:new Date().toISOString()}).eq('id',id);
+    await loadAll(); draw(); return;
+  }
   if(act==='kick'){
     e.stopPropagation();
     await sb.from('cp_players').delete().eq('id',id);
@@ -491,8 +635,7 @@ document.addEventListener('click', async e=>{
   if(act==='bulk'){
     if(!ticked.size){ alert('Tick some players first, then tap a team.'); return; }
     await sb.from('cp_players').update({team_id: id==='none' ? null : id}).in('id',[...ticked]);
-    ticked.clear();
-    await loadAll(); draw(); return;
+    ticked.clear(); await loadAll(); draw(); return;
   }
   if(act==='rename'){
     const t=teams.find(x=>x.id===id);
@@ -522,9 +665,17 @@ $('addTeamBtn').addEventListener('click', async ()=>{
 /* ============ rounds ============ */
 $('openBtn').addEventListener('click', async ()=>{
   const next=room.current_round+1;
+  const pool=sequences.filter(s=>s.active);
+  if(!pool.length){ alert('Turn on at least one sequence first.'); return; }
+  const pick=pool[Math.floor(Math.random()*pool.length)];
+
+  // everyone starts the round unblocked with a fresh allowance
+  await sb.from('cp_players').update({blocked:false, quota_reset_at:new Date().toISOString()}).eq('room_id',room.id);
+
   await sb.from('cp_rounds').upsert({
     room_id:room.id, round_no:next, layout:makeLayout(),
-    go_at:new Date(Date.now()+6000).toISOString(), status:'running'
+    seq_name:pick.name, seq_order:pick.seq_order,
+    go_at:new Date(Date.now()+7000).toISOString(), status:'running'
   },{onConflict:'room_id,round_no'});
   await sb.from('cp_rooms').update({status:'running', current_round:next}).eq('id',room.id);
   await loadAll(); draw();
