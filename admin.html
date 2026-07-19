@@ -96,11 +96,17 @@
   <div class="eyebrow">Crocodile Pit</div>
   <h1>Host console</h1>
   <div class="card" style="margin-top:18px">
-    <label>Host PIN</label>
-    <input type="password" id="pin" placeholder="PIN">
+    <label>Host password</label>
+    <input type="password" id="pin" placeholder="Password">
     <div style="height:12px"></div>
     <button class="btn full" id="pinBtn">Unlock</button>
     <p class="err" id="pinErr"></p>
+    <p style="text-align:center;margin:4px 0 0">
+      <a href="#" id="forgotLink" style="color:#8fb79c;font-size:14px;font-weight:600;text-decoration:underline">Forgot password?</a>
+    </p>
+    <p class="muted hidden" id="forgotMsg" style="text-align:center;margin:10px 0 0">
+      Write to <a href="mailto:vkvcoder.support@gmail.com" style="color:var(--amber)">vkvcoder.support@gmail.com</a> and the host password will be sent to you.
+    </p>
   </div>
 </section>
 
@@ -124,6 +130,7 @@
     </div>
     <p class="err" id="reErr"></p>
   </div>
+  <p style="text-align:center;margin-top:6px"><button class="btn ghost" id="logoutBtn2">Log out</button></p>
 </section>
 
 <!-- ====== CONSOLE ====== -->
@@ -133,7 +140,10 @@
       <div class="eyebrow">Room code</div>
       <div class="code" id="roomCode">----</div>
     </div>
-    <button class="btn ghost" id="exitBtn">Close</button>
+    <span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn ghost" id="exitBtn">Close room</button>
+      <button class="btn ghost" id="logoutBtn">Log out</button>
+    </span>
   </div>
   <p class="muted" id="roomMeta"></p>
 
@@ -235,9 +245,11 @@
     <div class="card"><div id="sbHost"></div></div>
   </div>
 </section>
-
+  <p style="text-align:center;margin:34px 0 0;font-size:13px;color:#48705a;letter-spacing:.06em">
+    Support:
+    <a href="mailto:vkvcoder.support@gmail.com" style="color:#8fb79c">vkvcoder.support@gmail.com</a>
+  </p>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
@@ -254,12 +266,28 @@ $('pinBtn').addEventListener('click', ()=>{
   if($('pin').value === ADMIN_PIN){
     sessionStorage.setItem('cp_admin','1');
     $('gate').classList.add('hidden'); $('setup').classList.remove('hidden');
-  }else $('pinErr').textContent='Wrong PIN.';
+  }else $('pinErr').textContent='Wrong password.';
 });
 $('pin').addEventListener('keydown',e=>{ if(e.key==='Enter') $('pinBtn').click(); });
 if(sessionStorage.getItem('cp_admin')==='1'){
   $('gate').classList.add('hidden'); $('setup').classList.remove('hidden');
 }
+
+$('forgotLink').addEventListener('click', e=>{
+  e.preventDefault();
+  $('forgotMsg').classList.remove('hidden');
+});
+
+function logout(){
+  if(!confirm('Log out of the host console? Any room you opened stays live and you can come back into it with its code.')) return;
+  sessionStorage.removeItem('cp_admin');
+  localStorage.removeItem('cp_host_room');
+  if(ch) sb.removeChannel(ch);
+  clearInterval(poll);
+  location.reload();
+}
+$('logoutBtn').addEventListener('click', logout);
+$('logoutBtn2').addEventListener('click', logout);
 
 /* ============ OPEN A ROOM ============ */
 $('createBtn').addEventListener('click', async ()=>{
