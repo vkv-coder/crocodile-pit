@@ -5,11 +5,21 @@
 const SUPABASE_URL  = "https://jqqnnkzozjskziaizajg.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg";
 
-const ADMIN_PIN = "croc@admin2026";
-
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   realtime: { params: { eventsPerSecond: 20 } }
 });
+
+// Admin writes (create/edit/delete rooms, teams, rounds, sequences) go through
+// the cp-admin Edge Function, which checks the PIN server-side against a secret
+// that never ships to the browser, then writes using service_role.
+async function adminApi(action, table, payload, filter, onConflict){
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/cp-admin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+    body: JSON.stringify({ pin: sessionStorage.getItem('cp_admin_pin'), table, action, payload, filter, onConflict })
+  });
+  return res.json();
+}
 
 /* ---------- board layout: 1 and 20 only at row start / row end ---------- */
 function makeLayout(){

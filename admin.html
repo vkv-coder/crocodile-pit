@@ -262,12 +262,29 @@ let room=null, teams=[], players=[], rounds=[], taps=[], results=[], sequences=[
 let ch=null, poll=null, touchedPts=false, ticked=new Set(), foulDraft=null;
 
 /* ============ PIN ============ */
-$('pinBtn').addEventListener('click', ()=>{
-  if($('pin').value === ADMIN_PIN){
+$('pinBtn').addEventListener('click', async ()=>{
+  const enteredPin = $('pin').value;
+  $('pinBtn').disabled = true;
+  const { ok, error } = await adminApiVerify(enteredPin);
+  $('pinBtn').disabled = false;
+  if(ok){
     sessionStorage.setItem('cp_admin','1');
+    sessionStorage.setItem('cp_admin_pin', enteredPin);
     $('gate').classList.add('hidden'); $('setup').classList.remove('hidden');
-  }else $('pinErr').textContent='Wrong password.';
+  }else $('pinErr').textContent = error || 'Wrong password.';
 });
+async function adminApiVerify(pin){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/cp-admin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      body: JSON.stringify({ pin, action: 'verify' })
+    });
+    if(res.status === 401) return { ok:false, error:'Wrong password.' };
+    if(!res.ok) return { ok:false, error:'Could not reach server, try again.' };
+    return await res.json();
+  }catch(e){ return { ok:false, error:'Could not reach server, try again.' }; }
+}
 $('pin').addEventListener('keydown',e=>{ if(e.key==='Enter') $('pinBtn').click(); });
 if(sessionStorage.getItem('cp_admin')==='1'){
   $('gate').classList.add('hidden'); $('setup').classList.remove('hidden');
@@ -281,6 +298,7 @@ $('forgotLink').addEventListener('click', e=>{
 function logout(){
   if(!confirm('Log out of the host console? Any room you opened stays live and you can come back into it with its code.')) return;
   sessionStorage.removeItem('cp_admin');
+  sessionStorage.removeItem('cp_admin_pin');
   localStorage.removeItem('cp_host_room');
   if(ch) sb.removeChannel(ch);
   clearInterval(poll);
@@ -296,11 +314,12 @@ $('createBtn').addEventListener('click', async ()=>{
   if(code.length<3){ $('createErr').textContent='Give the room a code of at least 3 characters.'; return; }
   const {data:exists}=await sb.from('cp_rooms').select('id').eq('code',code).maybeSingle();
   if(exists){ $('createErr').textContent='That code is already in use. Pick another, or reopen it below.'; return; }
-  const {data,error}=await sb.from('cp_rooms').insert({
+  const {data,error}=await adminApi('insert','cp_rooms',{
     code, teams_planned:0, rounds_total:4, top_points:1000, last_points:250, foul_multiplier:100, tap_quota:5
-  }).select().single();
-  if(error){ $('createErr').textContent='Could not create the room.'; return; }
-  room=data; localStorage.setItem('cp_host_room',code); openConsole();
+  });
+  const room0 = data && data[0];
+  if(error || !room0){ $('createErr').textContent='Could not create the room.'; return; }
+  room=room0; localStorage.setItem('cp_host_room',code); openConsole();
 });
 $('newCode').addEventListener('keydown',e=>{ if(e.key==='Enter') $('createBtn').click(); });
 
@@ -404,20 +423,20 @@ $('nTeams').addEventListener('input', ()=>{ if(!touchedPts) suggest(); previewLa
 $('saveSetupBtn').addEventListener('click', async ()=>{
   const n=+$('nTeams').value||0;
   if(n<2){ $('setupMsg').textContent='Need at least 2 teams.'; return; }
-  await sb.from('cp_rooms').update({
+  await adminApi('update','cp_rooms',{
     teams_planned:n, rounds_total:+$('nRounds').value||4, tap_quota:+$('nQuota').value||0,
     top_points:+$('topPts').value||0, last_points:+$('lastPts').value||0,
     foul_multiplier:+$('foulMult').value||0
-  }).eq('id',room.id);
+  }, {column:'id', value:room.id});
   await loadAll();
   if(teams.length < n){
     const rows=[];
     for(let i=teams.length;i<n;i++) rows.push({room_id:room.id, name:TEAM_NAMES[i]||('Team '+(i+1))});
-    await sb.from('cp_teams').insert(rows);
+    await adminApi('insert','cp_teams',rows);
   }else if(teams.length > n){
     for(const t of teams.slice(n)){
       await sb.from('cp_players').update({team_id:null}).eq('team_id',t.id);
-      await sb.from('cp_teams').delete().eq('id',t.id);
+      await adminApi('delete','cp_teams',null,{column:'id', value:t.id});
     }
   }
   await loadAll();
@@ -455,7 +474,7 @@ function drawFouls(){
   });
 }
 $('saveFoulBtn').addEventListener('click', async ()=>{
-  await sb.from('cp_rooms').update({foul_rules:foulDraft}).eq('id',room.id);
+  await adminApi('update','cp_rooms',{foul_rules:foulDraft},{column:'id',value:room.id});
   await loadAll();
   $('foulMsg').textContent='Saved.';
   setTimeout(()=>{ $('foulMsg').textContent=''; },2500);
@@ -482,7 +501,7 @@ $('addSeqBtn').addEventListener('click', async ()=>{
   if(nums.length!==20){ $('seqErr').textContent=`Needs all 20 numbers — you gave ${nums.length}.`; return; }
   const sorted=[...nums].sort((a,b)=>a-b);
   for(let i=0;i<20;i++) if(sorted[i]!==i+1){ $('seqErr').textContent='Must use each number from 1 to 20 exactly once.'; return; }
-  await sb.from('cp_sequences').insert({name, seq_order:nums});
+  await adminApi('insert','cp_sequences',{name, seq_order:nums});
   $('newSeqName').value=''; $('newSeqOrder').value='';
   await loadAll(); draw();
 });
@@ -646,12 +665,12 @@ document.addEventListener('click', async e=>{
   }
   if(act==='seqtoggle'){
     const s=sequences.find(x=>x.id===id);
-    await sb.from('cp_sequences').update({active:!s.active}).eq('id',id);
+    await adminApi('update','cp_sequences',{active:!s.active},{column:'id',value:id});
     await loadAll(); draw(); return;
   }
   if(act==='seqdel'){
     if(!confirm('Delete this sequence for good?')) return;
-    await sb.from('cp_sequences').delete().eq('id',id);
+    await adminApi('delete','cp_sequences',null,{column:'id',value:id});
     await loadAll(); draw(); return;
   }
   if(act==='unblock'){
@@ -676,15 +695,15 @@ document.addEventListener('click', async e=>{
   if(act==='rename'){
     const t=teams.find(x=>x.id===id);
     const n=prompt('Team name', t?t.name:'');
-    if(n&&n.trim()){ await sb.from('cp_teams').update({name:n.trim()}).eq('id',id); await loadAll(); draw(); }
+    if(n&&n.trim()){ await adminApi('update','cp_teams',{name:n.trim()},{column:'id',value:id}); await loadAll(); draw(); }
     return;
   }
   if(act==='delteam'){
     if(!confirm('Remove this team? Its players go back to no team.')) return;
     await sb.from('cp_players').update({team_id:null}).eq('team_id',id);
-    await sb.from('cp_teams').delete().eq('id',id);
+    await adminApi('delete','cp_teams',null,{column:'id',value:id});
     await loadAll();
-    await sb.from('cp_rooms').update({teams_planned:teams.length}).eq('id',room.id);
+    await adminApi('update','cp_rooms',{teams_planned:teams.length},{column:'id',value:room.id});
     await loadAll(); draw(); return;
   }
 });
@@ -692,9 +711,9 @@ document.addEventListener('click', async e=>{
 $('addTeamBtn').addEventListener('click', async ()=>{
   const n=prompt('Team name','Team '+String.fromCharCode(65+teams.length));
   if(!n||!n.trim()) return;
-  await sb.from('cp_teams').insert({room_id:room.id, name:n.trim()});
+  await adminApi('insert','cp_teams',{room_id:room.id, name:n.trim()});
   await loadAll();
-  await sb.from('cp_rooms').update({teams_planned:teams.length}).eq('id',room.id);
+  await adminApi('update','cp_rooms',{teams_planned:teams.length},{column:'id',value:room.id});
   await loadAll(); draw();
 });
 
@@ -708,20 +727,20 @@ $('openBtn').addEventListener('click', async ()=>{
   // everyone starts the round unblocked with a fresh allowance
   await sb.from('cp_players').update({blocked:false, quota_reset_at:new Date().toISOString()}).eq('room_id',room.id);
 
-  await sb.from('cp_rounds').upsert({
+  await adminApi('upsert','cp_rounds',{
     room_id:room.id, round_no:next, layout:makeLayout(),
     seq_name:pick.name, seq_order:pick.seq_order,
     go_at:new Date(Date.now()+7000).toISOString(), status:'running'
-  },{onConflict:'room_id,round_no'});
-  await sb.from('cp_rooms').update({status:'running', current_round:next}).eq('id',room.id);
+  }, null, 'room_id,round_no');
+  await adminApi('update','cp_rooms',{status:'running', current_round:next},{column:'id',value:room.id});
   await loadAll(); draw();
 });
 
 async function closeRound(){
   const cur=rounds[rounds.length-1];
   if(!cur||cur.status==='closed') return;
-  await sb.from('cp_rounds').update({status:'closed'}).eq('id',cur.id);
-  await sb.from('cp_rooms').update({status:'round_end'}).eq('id',room.id);
+  await adminApi('update','cp_rounds',{status:'closed'},{column:'id',value:cur.id});
+  await adminApi('update','cp_rooms',{status:'round_end'},{column:'id',value:room.id});
   await loadAll(); draw();
 }
 $('closeBtn').addEventListener('click', ()=>{
@@ -729,7 +748,7 @@ $('closeBtn').addEventListener('click', ()=>{
 });
 $('finishBtn').addEventListener('click', async ()=>{
   if(!confirm('Publish the scores to every player?')) return;
-  await sb.from('cp_rooms').update({status:'finished'}).eq('id',room.id);
+  await adminApi('update','cp_rooms',{status:'finished'},{column:'id',value:room.id});
   await loadAll(); draw();
 });
 </script>
