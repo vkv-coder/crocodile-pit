@@ -316,10 +316,15 @@ $('leaveBtn2').addEventListener('click', leave);
 /* ---------- room ---------- */
 async function enterRoom(){
   joinView.classList.add('hidden');
-  await refreshAll();
-  $('roomInfo').textContent=`Room ${room.code} · ${room.rounds_total} rounds`;
-  subscribe();
-  render();
+  try{
+    await refreshAll();
+    $('roomInfo').textContent=`Room ${room.code} · ${room.rounds_total} rounds`;
+    subscribe();
+    render();
+  }catch(e){
+    joinView.classList.remove('hidden');
+    $('joinErr').textContent='Could not load the room. Please try again.';
+  }
 }
 async function refreshAll(){
   const [t,p,rd,rm]=await Promise.all([
