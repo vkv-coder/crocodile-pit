@@ -426,23 +426,26 @@ $('nTeams').addEventListener('input', ()=>{ if(!touchedPts) suggest(); previewLa
 $('saveSetupBtn').addEventListener('click', async ()=>{
   const n=+$('nTeams').value||0;
   if(n<2){ $('setupMsg').textContent='Need at least 2 teams.'; return; }
-  await adminApi('update','cp_rooms',{
+  const {error:err1}=await adminApi('update','cp_rooms',{
     teams_planned:n, rounds_total:+$('nRounds').value||4, tap_quota:+$('nQuota').value||0,
     top_points:+$('topPts').value||0, last_points:+$('lastPts').value||0,
     foul_multiplier:+$('foulMult').value||0
   }, {column:'id', value:room.id});
   await loadAll();
+  let err2=null;
   if(teams.length < n){
     const rows=[];
     for(let i=teams.length;i<n;i++) rows.push({room_id:room.id, name:TEAM_NAMES[i]||('Team '+(i+1))});
-    await adminApi('insert','cp_teams',rows);
+    ({error:err2}=await adminApi('insert','cp_teams',rows));
   }else if(teams.length > n){
     for(const t of teams.slice(n)){
       await sb.from('cp_players').update({team_id:null}).eq('team_id',t.id);
-      await adminApi('delete','cp_teams',null,{column:'id', value:t.id});
+      const {error}=await adminApi('delete','cp_teams',null,{column:'id', value:t.id});
+      if(error) err2=error;
     }
   }
   await loadAll();
+  if(err1||err2){ $('setupMsg').textContent='Could not save setup. Try again.'; return; }
   $('setupMsg').textContent='Saved. Now put the players into teams below.';
   setTimeout(()=>{ $('setupMsg').textContent=''; },3000);
   draw();
@@ -477,8 +480,9 @@ function drawFouls(){
   });
 }
 $('saveFoulBtn').addEventListener('click', async ()=>{
-  await adminApi('update','cp_rooms',{foul_rules:foulDraft},{column:'id',value:room.id});
+  const {error}=await adminApi('update','cp_rooms',{foul_rules:foulDraft},{column:'id',value:room.id});
   await loadAll();
+  if(error){ $('foulMsg').textContent='Could not save. Try again.'; setTimeout(()=>{ $('foulMsg').textContent=''; },2500); return; }
   $('foulMsg').textContent='Saved.';
   setTimeout(()=>{ $('foulMsg').textContent=''; },2500);
   draw();
