@@ -1,12 +1,24 @@
 // Server-side gate for crocodile-pit's admin (host) writes.
 //
-// The 4 tables below used to have wide-open RLS (anon could insert/
+// The 4 original tables used to have wide-open RLS (anon could insert/
 // update/delete directly), so the client-side PIN check in admin.html
 // was cosmetic only - anyone could bypass the UI and hit the Supabase
 // REST API directly. RLS on these tables is now SELECT-only for anon;
 // all writes must go through here, where the PIN is checked against a
 // secret that never ships to the browser, using service_role to
 // perform the actual write.
+//
+// cp_players added 2026-11-13: admin.html's unblock/kick/bulk-reassign/
+// delteam/round-reset actions were writing to it directly, the same
+// bypass as the original 4 tables. cp_players ALSO still needs real
+// anon write access for the public join flow (index.html) - a player
+// joining/leaving/self-blocking - so unlike the other 4 tables, RLS on
+// it stays open for anon rather than SELECT-only. The 3 fields that are
+// genuinely admin-only (team_id, quota_reset_at, blocked:true->false)
+// are locked at the database level by a BEFORE UPDATE trigger instead
+// (cp_players_guard_admin_fields, see migration) - this function being
+// the only service_role caller is what lets that trigger's exception
+// get bypassed for legitimate admin writes.
 //
 // Deploy with:
 //   supabase functions deploy cp-admin
@@ -15,7 +27,12 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const ALLOWED_TABLES = new Set(["cp_rooms", "cp_teams", "cp_rounds", "cp_sequences"]);
+// deno-lint-ignore no-explicit-any
+function applyFilter(q: any, filter: { column: string; value: unknown; op?: "eq" | "in" }) {
+  return filter.op === "in" ? q.in(filter.column, filter.value as never[]) : q.eq(filter.column, filter.value as never);
+}
+
+const ALLOWED_TABLES = new Set(["cp_rooms", "cp_teams", "cp_rounds", "cp_sequences", "cp_players"]);
 const ALLOWED_ACTIONS = new Set(["insert", "update", "delete", "upsert", "verify"]);
 
 Deno.serve(async (req: Request) => {
@@ -33,7 +50,7 @@ Deno.serve(async (req: Request) => {
     table?: string;
     action?: string;
     payload?: unknown;
-    filter?: { column: string; value: unknown };
+    filter?: { column: string; value: unknown; op?: "eq" | "in" };
     onConflict?: string;
   };
   try {
@@ -74,12 +91,12 @@ Deno.serve(async (req: Request) => {
     query = supabaseAdmin.from(table).upsert(payload as never, onConflict ? { onConflict } : undefined).select();
   } else if (action === "update") {
     let q = supabaseAdmin.from(table).update(payload as never);
-    if (filter) q = q.eq(filter.column, filter.value as never);
+    if (filter) q = applyFilter(q, filter);
     query = q.select();
   } else {
     // delete
     let q = supabaseAdmin.from(table).delete();
-    if (filter) q = q.eq(filter.column, filter.value as never);
+    if (filter) q = applyFilter(q, filter);
     query = q.select();
   }
 

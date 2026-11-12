@@ -439,7 +439,7 @@ $('saveSetupBtn').addEventListener('click', async ()=>{
     ({error:err2}=await adminApi('insert','cp_teams',rows));
   }else if(teams.length > n){
     for(const t of teams.slice(n)){
-      await sb.from('cp_players').update({team_id:null}).eq('team_id',t.id);
+      await adminApi('update','cp_players',{team_id:null},{column:'team_id',value:t.id});
       const {error}=await adminApi('delete','cp_teams',null,{column:'id', value:t.id});
       if(error) err2=error;
     }
@@ -681,12 +681,12 @@ document.addEventListener('click', async e=>{
     await loadAll(); draw(); return;
   }
   if(act==='unblock'){
-    await sb.from('cp_players').update({blocked:false, quota_reset_at:new Date().toISOString()}).eq('id',id);
+    await adminApi('update','cp_players',{blocked:false, quota_reset_at:new Date().toISOString()},{column:'id',value:id});
     await loadAll(); draw(); return;
   }
   if(act==='kick'){
     e.stopPropagation();
-    await sb.from('cp_players').delete().eq('id',id);
+    await adminApi('delete','cp_players',null,{column:'id',value:id});
     ticked.delete(id);
     await loadAll(); draw(); return;
   }
@@ -696,7 +696,7 @@ document.addEventListener('click', async e=>{
   }
   if(act==='bulk'){
     if(!ticked.size){ alert('Tick some players first, then tap a team.'); return; }
-    await sb.from('cp_players').update({team_id: id==='none' ? null : id}).in('id',[...ticked]);
+    await adminApi('update','cp_players',{team_id: id==='none' ? null : id},{column:'id',value:[...ticked],op:'in'});
     ticked.clear(); await loadAll(); draw(); return;
   }
   if(act==='rename'){
@@ -707,7 +707,7 @@ document.addEventListener('click', async e=>{
   }
   if(act==='delteam'){
     if(!confirm('Remove this team? Its players go back to no team.')) return;
-    await sb.from('cp_players').update({team_id:null}).eq('team_id',id);
+    await adminApi('update','cp_players',{team_id:null},{column:'team_id',value:id});
     await adminApi('delete','cp_teams',null,{column:'id',value:id});
     await loadAll();
     await adminApi('update','cp_rooms',{teams_planned:teams.length},{column:'id',value:room.id});
@@ -732,7 +732,7 @@ $('openBtn').addEventListener('click', async ()=>{
   const pick=pool[Math.floor(Math.random()*pool.length)];
 
   // everyone starts the round unblocked with a fresh allowance
-  await sb.from('cp_players').update({blocked:false, quota_reset_at:new Date().toISOString()}).eq('room_id',room.id);
+  await adminApi('update','cp_players',{blocked:false, quota_reset_at:new Date().toISOString()},{column:'room_id',value:room.id});
 
   await adminApi('upsert','cp_rounds',{
     room_id:room.id, round_no:next, layout:makeLayout(),
